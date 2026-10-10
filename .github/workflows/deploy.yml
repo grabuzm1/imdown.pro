@@ -1,0 +1,24 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /www/wwwroot/Imdown.pro
+            git pull
+            fuser -k 8000/tcp || true
+            sleep 2
+            nohup /www/wwwroot/Imdown.pro/.venv/bin/python -m uvicorn script:app --host 127.0.0.1 --port 8000 > /www/wwwlogs/imdown.log 2>&1 < /dev/null &
+            sleep 3
+            curl -s http://127.0.0.1:8000/ > /dev/null && echo "OK: сайт поднялся" || echo "FAIL: сайт не отвечает"

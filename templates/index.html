@@ -475,6 +475,43 @@ body::before{
   font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;
 }
 
+.maint-note{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 20px;
+  margin-bottom:32px;
+  border-radius:14px;
+  background:rgba(255,180,80,.08);
+  border:1px solid rgba(255,180,80,.28);
+  color:var(--text);
+  font-size:14px;
+  font-weight:500;
+  opacity:0;
+  animation:fadeUp .7s ease-out .1s forwards;
+}
+.maint-note .mn-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#ffb450;
+  box-shadow:0 0 12px #ffb450;
+  animation:mnPulse 1.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes mnPulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(1.35)}
+}
+
+@media (max-width:640px){
+  .maint-note{
+    font-size:13px;
+    padding:12px 16px;
+    margin-bottom:24px;
+  }
+}
+
 </style></head><body class="theme-sunset">
 
 <div class="wrap">
@@ -488,6 +525,11 @@ body::before{
       <a href="/updates">Обновления</a>
       __TOP_RIGHT__
     </div>
+  </div>
+
+    <div class="maint-note">
+    <span class="mn-dot"></span>
+    <span>Идут технические работы. Возможны сбои.</span>
   </div>
 
   <div class="hero">

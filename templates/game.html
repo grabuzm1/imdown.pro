@@ -1,268 +1,447 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>clicker down</title>
+<title>Clicker Down · imdown.pro</title>
 <style>
-:root{
-  --bg:#0f1115;--card:#171b22;--accent:#00ADB5;--accent2:#00e0ea;
-  --text:#e8ecf1;--muted:#8b93a1;--ok:#3ddc97;--gold:#ffd166;
-  --line:#222731;--radius:10px;
+body.theme-sunset{
+  --bg:#1a1014;
+  --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
+    rgba(255,120,80,.14) 0%,
+    rgba(200,80,140,.06) 40%,
+    transparent 70%);
+  --text:#fdf2ee;
+  --muted:#a89292;
+  --accent:#ff7a4a;
+  --accent2:#ff4a8b;
+  --gold:#ffd166;
+  --ok:#4ade80;
+  --card-bg:rgba(255,255,255,.035);
+  --card-border:rgba(255,150,120,.10);
+  --score-grad:linear-gradient(180deg,#fff 0%, #ffb07a 55%, #ff4a8b 100%);
+  --ripple:rgba(255,122,74,.35);
 }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
+body.theme-midnight{
+  --bg:#0f1115;
+  --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
+    rgba(0,173,181,.14) 0%,
+    rgba(0,224,234,.06) 40%,
+    transparent 70%);
+  --text:#e8ecf1;
+  --muted:#8b93a1;
+  --accent:#00ADB5;
+  --accent2:#00e0ea;
+  --gold:#ffd166;
+  --ok:#4ade80;
+  --card-bg:rgba(255,255,255,.035);
+  --card-border:rgba(255,255,255,.08);
+  --score-grad:linear-gradient(180deg,#ffffff 0%, #9fe9ee 100%);
+  --ripple:rgba(0,224,234,.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
 body{
   font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-  background:var(--bg);color:var(--text);
-  display:flex;justify-content:center;align-items:flex-start;
-  min-height:100vh;padding:22px 18px 40px;
+  color:var(--text);
+  background:var(--bg);
+  background-image:var(--bg-glow);
+  background-attachment:fixed;
+  min-height:100vh;
+  padding:24px 20px 60px;
+  overflow-x:hidden;
   touch-action:pan-y;
   user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
-  overscroll-behavior-y:contain;font-size:14px;
+  overscroll-behavior-y:contain;
+  transition:background .4s ease, color .3s ease;
 }
-.big-btn,.buy,.mode,.tab,.theme-chip,.close-x,.icon-btn,.hub-link,.clicker-card{touch-action:none}
-.wrap{width:100%;max-width:400px}
+.wrap{max-width:440px;margin:0 auto}
 
-body.theme-soft{--line:#d5dbe6;--radius:12px}
-body.theme-soft .big-btn{background:#ffffff;border:2px solid #d5dbe6;color:#1a2030;font-weight:700}
-body.theme-soft .clicker-card:active .big-btn{background:#eef1f6;border-color:var(--accent)}
-body.theme-soft .bar{background:#d5dbe6}
-body.theme-soft .icon{background:#eef1f6}
-body.theme-soft .item{border-color:#e8ecf4}
-body.theme-soft .title{color:#1a2030}
-body.theme-soft .sub{color:#6b7484}
-body.theme-soft .buy{border-color:#c8d0de;color:#4a5568}
-body.theme-soft .buy:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:#f5f7fc}
-body.theme-soft .daily{border-color:#d5dbe6;background:#ffffff}
-body.theme-soft .modal{background:#ffffff;border-color:#d5dbe6}
-body.theme-soft .theme-chip{border-color:#d5dbe6;color:#6b7484}
-body.theme-soft .close-x{border-color:#d5dbe6;color:#6b7484}
-body.theme-soft .tab{color:#6b7484}
-body.theme-soft .tab.active{color:#1a2030}
-body.theme-soft .score{color:#1a2030}
-body.theme-soft .stats{color:#6b7484}
-body.theme-soft .clicker-card{background:#ffffff;border-color:#d5dbe6}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:20px;font-size:14px;color:var(--muted);
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  font-weight:700;font-size:15px;color:var(--text);text-decoration:none;
+}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 10px var(--accent2);
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{
+  0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 10px var(--accent2)}
+  50%{opacity:.6;transform:scale(1.25);box-shadow:0 0 18px var(--accent2)}
+}
+.nav{display:flex;gap:8px;align-items:center}
+.nav a, .nav button{
+  color:var(--muted);text-decoration:none;font-size:13px;
+  background:none;border:none;font-family:inherit;cursor:pointer;
+  padding:0;transition:color .2s;white-space:nowrap;
+}
+.nav a:hover, .nav button:hover{color:var(--text)}
 
-body.theme-retro{--radius:0;font-family:'Courier New',monospace}
-body.theme-retro .big-btn{border-radius:50%;border:2px solid var(--accent)}
-body.theme-retro .item{border-bottom-style:dashed}
-body.theme-glass{--line:rgba(255,255,255,.12)}
-body.theme-glass .big-btn{background:rgba(255,255,255,.06);backdrop-filter:blur(10px)}
-body.theme-glass .modal{background:rgba(20,25,32,.85);backdrop-filter:blur(12px)}
-body.theme-glass .clicker-card{background:rgba(255,255,255,.05);backdrop-filter:blur(10px)}
+.nav .btn-home{
+  color:var(--accent);
+  border:1px solid var(--card-border);
+  padding:6px 12px;border-radius:8px;
+  font-size:12px;font-weight:700;letter-spacing:.2px;
+  transition:all .15s ease;
+}
+.nav .btn-home:hover{background:var(--card-bg);border-color:var(--accent)}
 
-.top{display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:24px;color:var(--muted);font-size:13px}
-.top .who b{color:var(--text);font-weight:500}
-.beta{display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;
-  color:var(--gold);background:rgba(255,209,102,.12);
-  padding:2px 6px;border-radius:5px;text-transform:uppercase;
-  border:1px solid rgba(255,209,102,.3);margin-left:4px;vertical-align:middle}
-.top .nav{display:flex;gap:14px;align-items:center}
-.icon-btn{background:none;border:none;color:var(--muted);font-size:15px;
-  cursor:pointer;padding:0;opacity:.7}
-.icon-btn:hover{opacity:1;color:var(--text)}
-.hub-link{color:var(--muted);text-decoration:none}
-.hub-link:hover{color:var(--accent)}
-
-.hero{text-align:center;margin-bottom:20px}
-.score{font-size:46px;font-weight:600;letter-spacing:-1.5px;
-  line-height:1;margin-bottom:6px}
-.stats{color:var(--muted);font-size:12px;letter-spacing:.1px}
-.stats .sep{margin:0 8px;opacity:.3}
-.stats .gold{color:var(--gold);opacity:.85}
-
-.clicker-card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:16px;
+.quick-links{
   display:flex;
+  gap:8px;
+  margin-bottom:14px;
   justify-content:center;
+  flex-wrap:wrap;
+}
+.ql-item{
+  display:inline-flex;
   align-items:center;
-  cursor:pointer;
-  touch-action:none;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .15s ease;
+  gap:6px;
+  padding:7px 14px;
+  border-radius:10px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  color:var(--muted);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  transition:all .15s ease;
+  letter-spacing:.2px;
+}
+.ql-item:hover{
+  color:var(--accent);
+  border-color:var(--accent);
+}
+
+.clicker-zone{
   position:relative;
+  border-radius:22px;
+  padding:44px 20px 36px;
+  margin-bottom:16px;
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--card-border);
   overflow:hidden;
+  cursor:pointer;
+  text-align:center;
+  transition:transform .08s ease, border-color .2s ease;
 }
-.clicker-card::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:1;
+.clicker-zone::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 100%, var(--ripple) 0%, transparent 60%);
+  opacity:.4;
+  pointer-events:none;
 }
-.big-btn{
+.clicker-zone:active{
+  transform:scale(.99);
+  border-color:var(--accent);
+}
+.score-value{
   position:relative;
-  z-index:0;
-  width:210px;height:210px;border-radius:50%;
-  font-size:26px;font-weight:700;letter-spacing:.5px;
-  color:var(--text);border:2px solid var(--line);
-  background:transparent;cursor:pointer;pointer-events:none;
-  transition:transform .08s ease,background .15s ease;
+  font-size:clamp(44px, 9vw, 56px);
+  font-weight:900;letter-spacing:-2.5px;line-height:1;
+  margin-bottom:14px;
+  background:var(--score-grad);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  z-index:1;word-break:break-all;
 }
-.clicker-card:active .big-btn{transform:scale(.95);background:rgba(255,255,255,.04)}
+.score-unit{font-size:22px;font-weight:700;opacity:.8;margin-left:3px}
+.score-meta{
+  position:relative;z-index:1;
+  display:flex;justify-content:center;gap:14px;
+  font-size:13px;color:var(--muted);flex-wrap:wrap;
+}
+.score-meta b{color:var(--text);font-weight:700}
+.score-meta .gold{color:var(--gold)}
 
-.level{margin-bottom:20px}
-.level-head{display:flex;justify-content:space-between;font-size:11px;
-  color:var(--muted);margin-bottom:6px;letter-spacing:.2px}
-.level-head b{color:var(--text);font-weight:500}
-.bar{height:4px;background:var(--line);border-radius:999px;overflow:hidden}
-.bar-fill{height:100%;width:0%;background:var(--accent);
-  border-radius:999px;transition:width .25s}
+.ripple{
+  position:fixed;
+  width:20px;height:20px;
+  border-radius:50%;
+  border:2px solid var(--accent);
+  pointer-events:none;
+  z-index:98;
+  transform:translate(-50%,-50%);
+  animation:rippleGo .55s ease-out forwards;
+}
+@keyframes rippleGo{
+  0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(6)}
+}
 
-.daily{display:flex;align-items:center;gap:12px;
-  padding:12px 14px;border:1px solid var(--line);
-  border-radius:var(--radius);margin-bottom:20px;
-  font-size:12px;color:var(--muted)}
-.daily .ico{font-size:16px;opacity:.8}
-.daily .txt{flex:1;min-width:0}
-.daily .txt b{color:var(--text);font-weight:500;display:block;margin-bottom:2px;font-size:13px}
-.daily .txt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.daily-btn{background:transparent;color:var(--accent);border:1px solid var(--accent);
-  padding:6px 12px;border-radius:6px;font-weight:500;font-size:12px;
-  cursor:pointer;white-space:nowrap}
-.daily-btn:hover:not(:disabled){background:rgba(0,173,181,.08)}
-.daily-btn:disabled{border-color:var(--line);color:var(--muted);cursor:not-allowed}
+.level{
+  padding:14px 16px;border-radius:12px;
+  background:var(--card-bg);border:1px solid var(--card-border);
+  margin-bottom:12px;
+}
+.level-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+.level-head b{color:var(--text);font-weight:700}
+.level-bar{height:3px;background:rgba(255,255,255,.05);border-radius:999px;overflow:hidden}
+.level-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius:999px;transition:width .25s ease;
+}
 
-.tabs{display:flex;gap:22px;margin-bottom:16px;border-bottom:1px solid var(--line)}
-.tab{padding:8px 0;font-size:13px;font-weight:500;color:var(--muted);
-  cursor:pointer;border-bottom:1px solid transparent;margin-bottom:-1px}
+.daily{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:12px;
+  background:var(--card-bg);border:1px solid var(--card-border);
+  margin-bottom:20px;
+}
+.daily .ico{font-size:17px;opacity:.9}
+.daily .txt{flex:1;min-width:0;font-size:11px;color:var(--muted);line-height:1.3}
+.daily .txt b{color:var(--text);display:block;font-size:13px;font-weight:700;margin-bottom:1px}
+.daily .btn{
+  background:transparent;color:var(--accent);
+  border:1px solid var(--card-border);
+  padding:6px 12px;border-radius:8px;
+  font-size:11px;font-weight:700;
+  cursor:pointer;white-space:nowrap;font-family:inherit;
+  transition:all .15s ease;letter-spacing:.2px;
+}
+.daily .btn:hover:not(:disabled){background:var(--card-bg);border-color:var(--accent)}
+.daily .btn:disabled{border-color:var(--card-border);color:var(--muted);cursor:not-allowed}
+
+.tabs{
+  display:flex;gap:0;margin-bottom:20px;
+  border-bottom:1px solid var(--card-border);
+}
+.tab{
+  flex:1;padding:12px 0;text-align:center;
+  font-size:13px;font-weight:600;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:all .2s ease;letter-spacing:.2px;
+}
 .tab.active{color:var(--text);border-bottom-color:var(--accent)}
 
-.shop-head{display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:10px;gap:8px}
-.shop-head h3{margin:0;font-size:11px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1px;font-weight:500}
-.modes{display:flex;gap:4px}
-.mode{padding:3px 8px;font-size:11px;font-weight:500;color:var(--muted);
-  cursor:pointer;border-radius:5px;background:transparent;border:none}
+.shead{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;
+}
+.shead h3{
+  font-size:11px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+}
+.modes{
+  display:flex;gap:2px;
+  background:var(--card-bg);
+  padding:3px;border-radius:8px;
+  border:1px solid var(--card-border);
+}
+.mode{
+  padding:4px 12px;font-size:11px;font-weight:700;
+  color:var(--muted);cursor:pointer;border-radius:6px;
+  transition:all .15s ease;
+}
 .mode:hover{color:var(--text)}
-.mode.active{color:var(--accent);background:rgba(0,173,181,.1)}
+.mode.active{color:var(--bg);background:var(--accent)}
 
 .list{display:flex;flex-direction:column}
-.item{display:grid;grid-template-columns:28px 1fr auto;gap:14px;
-  align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.item{
+  display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;
+  padding:14px 0;border-bottom:1px solid var(--card-border);
+  transition:background .15s ease;
+}
 .item:last-child{border-bottom:none}
 .item.locked{opacity:.4}
-.icon{width:28px;height:28px;display:grid;place-items:center;font-size:16px;opacity:.85}
-.title{font-weight:500;font-size:13px;line-height:1.3}
-.sub{font-size:11px;color:var(--muted);margin-top:2px}
-.sub b{color:var(--text);font-weight:500}
+.item.owned .title::after{content:" ✓";color:var(--gold);font-size:11px}
 
-.buy{background:transparent;color:var(--muted);border:1px solid var(--line);
-  padding:6px 11px;border-radius:6px;font-weight:500;font-size:12px;
-  cursor:pointer;min-width:70px;text-align:center;line-height:1.25;
-  transition:border-color .15s,color .15s}
-.buy:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-.buy:disabled{cursor:not-allowed;opacity:.5}
-.buy.owned-btn{border-color:transparent;color:var(--muted);opacity:.6;cursor:default}
+.item.clickable{
+  cursor:pointer;
+  border-radius:10px;
+  padding-left:8px;padding-right:8px;margin:0 -8px;
+}
+.item.clickable:hover{background:var(--card-bg)}
+.item.clickable:active{background:rgba(255,255,255,.06)}
 
-.floater{position:fixed;pointer-events:none;font-weight:500;
-  color:var(--text);font-size:14px;opacity:.9;
-  animation:float .8s ease-out forwards;z-index:99}
-@keyframes float{to{transform:translateY(-40px);opacity:0}}
+.icon{
+  width:44px;height:44px;border-radius:11px;
+  display:grid;place-items:center;font-size:19px;
+  background:rgba(255,255,255,.035);
+  border:1px solid var(--card-border);
+}
+.title{font-size:14px;font-weight:700;margin-bottom:2px}
+.sub{font-size:12px;color:var(--muted)}
+.sub b{color:var(--ok);font-weight:600}
 
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);
-  display:none;justify-content:center;align-items:center;padding:20px;z-index:200}
+.buy{
+  background:transparent;color:var(--accent);
+  border:1px solid var(--card-border);
+  padding:7px 12px;border-radius:8px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  min-width:80px;text-align:center;line-height:1.25;
+  font-family:inherit;transition:all .15s ease;letter-spacing:.2px;
+}
+.buy:hover:not(:disabled){background:var(--card-bg);border-color:var(--accent)}
+.buy:disabled{border-color:var(--card-border);color:var(--muted);cursor:not-allowed}
+.buy.owned-btn{border-color:var(--card-border);color:var(--gold);cursor:default}
+
+.rebirth-card{
+  padding:24px 20px;
+  border-radius:16px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  text-align:center;
+  margin-bottom:16px;
+}
+.rebirth-icon{font-size:42px;margin-bottom:10px}
+.rebirth-title{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
+.rebirth-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+.rebirth-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:20px;
+}
+.rebirth-stat{
+  padding:12px 10px;border-radius:10px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--card-border);
+}
+.rebirth-stat .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.rebirth-stat .value{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.rebirth-stat .value.gold{color:var(--gold)}
+
+.rebirth-progress{
+  text-align:left;
+  font-size:12px;color:var(--muted);
+  margin-bottom:8px;
+  display:flex;justify-content:space-between;
+}
+.rebirth-bar{
+  height:6px;background:rgba(255,255,255,.05);border-radius:999px;overflow:hidden;
+  margin-bottom:18px;
+}
+.rebirth-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius:999px;transition:width .3s ease;
+}
+
+.rebirth-btn{
+  width:100%;
+  padding:14px 20px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  font-weight:800;
+  font-family:inherit;
+  cursor:pointer;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  color:var(--bg);
+  letter-spacing:.3px;
+  transition:all .2s ease;
+}
+.rebirth-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 30px var(--ripple)}
+.rebirth-btn:disabled{
+  background:rgba(255,255,255,.05);
+  color:var(--muted);
+  cursor:not-allowed;
+}
+.rebirth-hint{
+  margin-top:12px;
+  font-size:11px;
+  color:var(--muted);
+  opacity:.75;
+  line-height:1.5;
+}
+
+.floater{
+  position:fixed;pointer-events:none;
+  font-weight:800;font-size:15px;color:var(--accent2);
+  text-shadow:0 0 12px var(--ripple);
+  animation:float 1s ease-out forwards;z-index:99;
+}
+@keyframes float{to{transform:translateY(-60px);opacity:0}}
+
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:200;display:none;align-items:center;justify-content:center;padding:20px;
+}
 .overlay.open{display:flex}
-.modal{background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:20px;width:100%;max-width:320px}
-.modal h3{margin:0 0 4px;font-size:15px;font-weight:600}
-.modal .hint{color:var(--muted);font-size:12px;margin-bottom:16px}
-.themes{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:16px}
-.theme-chip{border:1px solid var(--line);border-radius:8px;padding:10px;
-  cursor:pointer;display:flex;align-items:center;gap:8px;
-  font-size:12px;font-weight:500;color:var(--muted);
-  background:transparent;transition:border-color .15s,color .15s}
-.theme-chip:hover{border-color:#2e3540;color:var(--text)}
-.theme-chip.active{border-color:var(--accent);color:var(--text)}
-.swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0}
-.close-x{background:transparent;color:var(--muted);border:1px solid var(--line);
-  padding:9px;border-radius:8px;width:100%;font-weight:500;font-size:13px;
-  cursor:pointer}
-.close-x:hover{border-color:#2e3540;color:var(--text)}
+.modal{
+  width:100%;max-width:340px;
+  background:var(--bg);border:1px solid var(--card-border);
+  border-radius:14px;padding:22px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.modal .hint{font-size:12px;color:var(--muted);margin-bottom:16px}
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.theme-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:12px;border-radius:10px;
+  background:var(--card-bg);
+  border:2px solid transparent;color:var(--text);
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .2s ease;font-family:inherit;
+}
+.theme-chip:hover{background:rgba(255,255,255,.08)}
+.theme-chip.active{border-color:var(--accent)}
+.swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0;pointer-events:none}
+.swatch.sunset{background:linear-gradient(135deg,#ff7a4a,#ff4a8b)}
+.swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
+.close-x{
+  width:100%;padding:11px;border-radius:9px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);color:var(--text);
+  font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;
+}
+.close-x:hover{background:rgba(255,255,255,.08)}
 
 .offline-toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#1e2430;
-  border:1px solid var(--accent);
-  border-radius:12px;
-  padding:12px 20px;
-  font-size:13px;
-  color:var(--text);
-  box-shadow:0 12px 40px rgba(0,0,0,.6);
-  z-index:99999;
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--bg);border:1px solid var(--accent);
+  border-radius:12px;padding:12px 20px;font-size:13px;
+  color:var(--text);box-shadow:0 12px 40px rgba(0,0,0,.6);
+  z-index:99999;text-align:center;pointer-events:none;
   animation:slideUp .35s ease-out;
-  max-width:calc(100% - 32px);
-  text-align:center;
-  pointer-events:none;
 }
 .offline-toast b{color:var(--accent2);font-weight:700}
 @keyframes slideUp{
   from{transform:translate(-50%,20px);opacity:0}
   to{transform:translate(-50%,0);opacity:1}
 }
-.update-note{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 16px;
-  margin-bottom:16px;
-  border-radius:12px;
-  background:rgba(0,173,181,.08);
-  border:1px solid rgba(0,173,181,.25);
-  color:var(--text);
-  font-size:13px;
-  font-weight:500;
+
+@media (max-width:420px){
+  body{padding:20px 16px 60px}
+  .score-value{font-size:44px;letter-spacing:-2px}
+  .clicker-zone{padding:36px 16px 30px}
+  .item{grid-template-columns:40px 1fr auto;gap:12px}
+  .icon{width:40px;height:40px;font-size:17px}
+  .nav{gap:6px}
+  .nav .btn-home{padding:5px 10px;font-size:11px}
 }
-.update-note .un-dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 10px var(--accent2);
-  animation:unPulse 1.4s ease-in-out infinite;
-  flex-shrink:0;
-}
-@keyframes unPulse{
-  0%,100%{opacity:1;transform:scale(1)}
-  50%{opacity:.4;transform:scale(1.3)}
-}
-</style></head><body>
+</style></head><body class="theme-sunset">
+
 <div class="wrap">
 
-  <div class="top">
-    <div class="who">Игрок: <b id="uname">—</b> <span class="beta">beta</span></div>
+  <div class="topbar">
+    <a class="brand" href="/"><div class="dot"></div>imdown.pro</a>
     <div class="nav">
-      <button class="icon-btn" id="gear" title="Настройки">⚙</button>
-      <a class="hub-link" href="/" title="На главную">🏠</a>
-      <a class="hub-link" id="back-hub" href="/hub">← DownGames</a>
+      <button id="gear" title="Настройки">⚙</button>
+      <a href="/" class="btn-home">На главную</a>
+      <a href="/hub">← DownGames</a>
     </div>
   </div>
 
-    <div class="update-note">
-    <span class="un-dot"></span>
-    Скоро обновление
+  <div class="quick-links">
+    <a href="/updates" class="ql-item">🆕 Что нового</a>
   </div>
 
-  <div class="hero">
-    <div class="score" id="s">0</div>
-    <div class="stats">
-      <span>В сек: <b id="c" style="color:var(--text);font-weight:500">0.0</b></span>
-      <span class="sep">·</span>
-      <span class="gold" id="m">+0%</span>
+  <div class="clicker-zone" id="btn">
+    <div class="score-value"><span id="s">0</span><span class="score-unit">⚡</span></div>
+    <div class="score-meta">
+      <span>В сек: <b id="c">0.0</b></span>
+      <span class="gold" id="m">+0% / +0%</span>
+      <span id="rb-badge" style="display:none">💎 <b id="rb-count">0</b></span>
     </div>
-  </div>
-
-  <div class="clicker-card" id="btn">
-    <button class="big-btn">КЛИК</button>
   </div>
 
   <div class="level">
@@ -270,7 +449,7 @@ body.theme-glass .clicker-card{background:rgba(255,255,255,.05);backdrop-filter:
       <span>Уровень <b id="l">1</b></span>
       <span id="ltxt">0 / 100</span>
     </div>
-    <div class="bar"><div class="bar-fill" id="bar"></div></div>
+    <div class="level-bar"><div class="level-fill" id="bar"></div></div>
   </div>
 
   <div class="daily">
@@ -279,22 +458,26 @@ body.theme-glass .clicker-card{background:rgba(255,255,255,.05);backdrop-filter:
       <b>Награда дня</b>
       <span id="daily-info">Загрузка...</span>
     </div>
-    <button class="daily-btn" id="daily-btn">Забрать</button>
+    <button class="btn" id="daily-btn">Забрать</button>
   </div>
 
   <div class="tabs" id="tabs">
     <div class="tab active" data-tab="gen">Улучшения</div>
     <div class="tab" data-tab="col">Коллекция</div>
+    <div class="tab" data-tab="reb">💎 Перерождение</div>
   </div>
 
-  <div class="shop-head">
+  <div class="shead" id="shop-shead">
     <h3 id="list-title">Улучшения</h3>
     <div class="modes" id="modes">
       <div class="mode active" data-m="1">×1</div>
       <div class="mode" data-m="max">Max</div>
     </div>
   </div>
+
   <div class="list" id="list"></div>
+  <div id="rebirth-panel" style="display:none"></div>
+
 </div>
 
 <div class="overlay" id="overlay">
@@ -307,28 +490,31 @@ body.theme-glass .clicker-card{background:rgba(255,255,255,.05);backdrop-filter:
 </div>
 
 <script>
-const SHOP = /*__SHOP__*/;
+const SHOP       = /*__SHOP__*/;
 const COLLECTION = /*__COLLECTION__*/;
-const THEMES = /*__THEMES__*/;
-const STATE = /*__STATE__*/;
+const THEMES     = /*__THEMES__*/;
+const STATE      = /*__STATE__*/;
 
 let score = STATE.score, power = STATE.power, cps = STATE.cps;
 let lvl = STATE.lvl, next = STATE.next;
 let totalEarned = STATE.total_earned || STATE.score;
+let totalEarnedAll = STATE.total_earned_all || 0;
 let counts = Object.assign({}, STATE.counts);
 let ownedMap = Object.assign({}, STATE.owned);
 let clickMult = STATE.clickMult || 0;
 let cpsMult = STATE.cpsMult || 0;
-let themeId = STATE.theme || 'midnight';
+let themeId = STATE.theme || 'sunset';
 let buyMode = 1, tab = 'gen';
 let daily = STATE.daily || { can: false, seconds_left: 0, streak: 0, bonus: 0 };
+let rebirths = STATE.rebirths || 0;
+let rebirthBonus = STATE.rebirthBonus || 0;
+let rebirthThreshold = STATE.rebirthThreshold || 1e15;
 
 const MAX_BUY = 10000000;
 const $ = id => document.getElementById(id);
-$('uname').textContent = STATE.name;
-$('back-hub').href = '/hub';
 
 const fmt = n => {
+  if (!isFinite(n)) n = 0;
   n = Math.floor(n);
   const u = [[1e33,'Dc'],[1e30,'No'],[1e27,'Oc'],[1e24,'Sp'],[1e21,'Sx'],
              [1e18,'Qi'],[1e15,'Q'],[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];
@@ -364,16 +550,9 @@ function maxAffordable(base, mult, ownedQty){
   while (qty<MAX_BUY && priceAfter(base,mult,ownedQty,qty+1)<=score) qty++;
   return {qty:qty, total: priceAfter(base,mult,ownedQty,qty)};
 }
-function applyTheme(t){
-  const r = document.documentElement.style;
-  r.setProperty('--accent', t.accent);
-  if (t.card) r.setProperty('--card', t.card);
-  if (t.bg2) r.setProperty('--bg', t.bg2);
-  if (t.text) r.setProperty('--text', t.text);
-  if (t.muted) r.setProperty('--muted', t.muted);
-  document.body.className = document.body.className.split(' ')
-    .filter(c => c.indexOf('theme-')!==0).join(' ');
-  if (t.style) document.body.classList.add(t.style);
+
+function applyTheme(id){
+  document.body.className = 'theme-' + id;
 }
 function checkLevelUp(){
   while (totalEarned >= next){
@@ -390,11 +569,21 @@ function renderStats(){
   $('ltxt').textContent = fmt(totalEarned) + ' / ' + fmt(next);
   const pct = Math.max(0, Math.min(100, (totalEarned / next) * 100));
   $('bar').style.width = pct + '%';
+  if (rebirths > 0){
+    $('rb-badge').style.display = 'inline';
+    $('rb-count').textContent = rebirths;
+  } else {
+    $('rb-badge').style.display = 'none';
+  }
 }
 function renderTabs(){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  $('list-title').textContent = tab === 'gen' ? 'Улучшения' : 'Коллекция';
+  $('list-title').textContent = tab === 'gen' ? 'Улучшения' : (tab === 'col' ? 'Коллекция' : 'Перерождение');
   $('modes').style.display = tab === 'gen' ? 'flex' : 'none';
+  $('shop-shead').style.display = tab === 'reb' ? 'none' : 'flex';
+  $('list').style.display = tab === 'reb' ? 'none' : 'flex';
+  $('rebirth-panel').style.display = tab === 'reb' ? 'block' : 'none';
+  if (tab === 'reb') renderRebirth();
 }
 function renderGen(){
   const box = $('list');
@@ -403,14 +592,18 @@ function renderGen(){
     const qty = counts[item.id] || 0;
     const price = priceAfter(item.base, item.mult, qty, 1);
     const can = score >= price;
-    const cls = 'item' + (qty === 0 && !can ? ' locked' : '');
+    const cls = 'item' + (qty === 0 && !can ? ' locked' : '') + (can ? ' clickable' : '');
     html +=
-      '<div class="' + cls + '">' +
+      '<div class="' + cls + '" ' +
+        (can ? 'onclick="buyClick(\'' + item.id + '\',\'gen\',event)"' : '') + '>' +
         '<div class="icon">' + item.icon + '</div>' +
         '<div><div class="title">' + item.name + '</div>' +
-        '<div class="sub">' + item.desc + ' · ' + qty + '</div></div>' +
-        '<button class="buy" data-id="' + item.id + '"' + (can ? '' : ' disabled') + '>' +
-          fmt(price) + '</button>' +
+        '<div class="sub">' + item.desc + ' · <b>' + qty + '</b></div></div>' +
+        '<button type="button" class="buy" data-id="' + item.id + '"' +
+          (can ? '' : ' disabled') +
+          ' onclick="buyClick(\'' + item.id + '\',\'gen\',event)">' +
+          fmt(price) + ' ⚡' +
+        '</button>' +
       '</div>';
   });
   box.innerHTML = html;
@@ -421,75 +614,83 @@ function renderCol(){
   COLLECTION.forEach(item => {
     const isOwned = !!ownedMap[item.id];
     const can = score >= item.base && !isOwned;
-    const cls = 'item' + (isOwned ? ' owned' : '') + (!isOwned && !can ? ' locked' : '');
+    const cls = 'item' + (isOwned ? ' owned' : '') +
+                (!isOwned && !can ? ' locked' : '') +
+                (can ? ' clickable' : '');
     let btn;
     if (isOwned){
-      btn = '<button class="buy owned-btn" disabled>—</button>';
+      btn = '<button type="button" class="buy owned-btn" disabled>✓</button>';
     } else {
-      btn = '<button class="buy" data-id="' + item.id + '"' +
-        (can ? '' : ' disabled') + '>' + fmt(item.base) + '</button>';
+      btn = '<button type="button" class="buy" data-id="' + item.id + '"' +
+              (can ? '' : ' disabled') +
+              ' onclick="buyClick(\'' + item.id + '\',\'col\',event)">' +
+              fmt(item.base) + ' ⚡' +
+            '</button>';
     }
     html +=
-      '<div class="' + cls + '">' +
+      '<div class="' + cls + '" ' +
+        (can ? 'onclick="buyClick(\'' + item.id + '\',\'col\',event)"' : '') + '>' +
         '<div class="icon">' + item.icon + '</div>' +
         '<div><div class="title">' + item.name + '</div>' +
-        '<div class="sub">' + item.desc + '</div></div>' + btn +
+        '<div class="sub">' + item.desc + '</div></div>' +
+        btn +
       '</div>';
   });
   box.innerHTML = html;
 }
-function renderList(){ if (tab === 'gen') renderGen(); else renderCol(); }
+function renderList(){
+  if (tab === 'gen') renderGen();
+  else if (tab === 'col') renderCol();
+}
+function renderRebirth(){
+  const box = $('rebirth-panel');
+  const canReb = totalEarned >= rebirthThreshold;
+  const pct = Math.max(0, Math.min(100, (totalEarned / rebirthThreshold) * 100));
+  const nextBonus = (rebirths + 1) * (rebirths + 1);
+  box.innerHTML =
+    '<div class="rebirth-card">' +
+      '<div class="rebirth-icon">💎</div>' +
+      '<div class="rebirth-title">Перерождение</div>' +
+      '<div class="rebirth-sub">Сбрось прогресс и стань сильнее</div>' +
 
-function updateGenRow(id){
-  const item = SHOP.find(i => i.id === id); if (!item) return;
-  const btn = $('list').querySelector('.buy[data-id="' + id + '"]');
-  if (!btn) return;
-  const qty = counts[id] || 0;
-  const price = priceAfter(item.base, item.mult, qty, 1);
-  const can = score >= price;
-  btn.disabled = !can;
-  btn.textContent = fmt(price);
-  const row = btn.closest('.item');
-  if (row){
-    const sub = row.querySelector('.sub');
-    if (sub) sub.textContent = item.desc + ' · ' + qty;
-    row.classList.toggle('locked', qty === 0 && !can);
+      '<div class="rebirth-stats">' +
+        '<div class="rebirth-stat">' +
+          '<div class="label">Перерождений</div>' +
+          '<div class="value gold">' + rebirths + '</div>' +
+        '</div>' +
+        '<div class="rebirth-stat">' +
+          '<div class="label">Бонус к клику</div>' +
+          '<div class="value">+' + Math.round(rebirthBonus * 100) + '%</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="rebirth-progress">' +
+        '<span>Прогресс</span>' +
+        '<span>' + fmt(totalEarned) + ' / ' + fmt(rebirthThreshold) + '</span>' +
+      '</div>' +
+      '<div class="rebirth-bar"><div class="rebirth-fill" style="width:' + pct + '%"></div></div>' +
+
+      '<button class="rebirth-btn" id="rebirth-btn"' + (canReb ? '' : ' disabled') + '>' +
+        (canReb ? 'Переродиться → +' + Math.round(nextBonus * 100) + '%' : 'Недостаточно прогресса') +
+      '</button>' +
+
+      '<div class="rebirth-hint">' +
+        'Сбрасывает: очки, юниты, коллекцию, уровень, ежедневку.<br>' +
+        'Оставляет: перерождения, тему, историю.' +
+      '</div>' +
+    '</div>';
+
+  const btn = $('rebirth-btn');
+  if (btn && canReb){
+    btn.addEventListener('click', doRebirth);
   }
 }
-function updateColRow(id){
-  const item = COLLECTION.find(i => i.id === id); if (!item) return;
-  const btn = $('list').querySelector('.buy[data-id="' + id + '"]');
-  if (!btn) return;
-  const row = btn.closest('.item');
-  if (!row) return;
-  row.classList.add('owned');
-  row.classList.remove('locked');
-  btn.disabled = true;
-  btn.classList.add('owned-btn');
-  btn.textContent = '—';
-}
-function refreshRows(){
-  if (tab === 'gen'){
-    SHOP.forEach(item => updateGenRow(item.id));
-  } else {
-    COLLECTION.forEach(item => {
-      if (ownedMap[item.id]) return;
-      const btn = $('list').querySelector('.buy[data-id="' + item.id + '"]');
-      if (!btn) return;
-      const can = score >= item.base;
-      btn.disabled = !can;
-      const row = btn.closest('.item');
-      if (row) row.classList.toggle('locked', !can);
-    });
-  }
-}
 
-$('list').addEventListener('click', function(e){
-  const btn = e.target.closest('.buy[data-id]');
-  if (!btn || btn.disabled) return;
-  const id = btn.dataset.id;
-  if (tab === 'gen') buyGen(id); else buyCol(id);
-});
+window.buyClick = function(id, kind, ev){
+  if (ev){ ev.preventDefault(); ev.stopPropagation(); }
+  if (kind === 'col') buyCol(id);
+  else buyGen(id);
+};
 
 function buyGen(id){
   const item = SHOP.find(i => i.id === id); if (!item) return;
@@ -506,9 +707,8 @@ function buyGen(id){
   score -= total;
   counts[id] = qtyOwned + qty;
   cps += item.cps * qty * (1 + cpsMult);
-  renderStats(); updateGenRow(id); save();
+  renderStats(); renderList(); save();
 }
-
 function buyCol(id){
   const item = COLLECTION.find(i => i.id === id);
   if (!item || ownedMap[id] || score < item.base) return;
@@ -517,10 +717,12 @@ function buyCol(id){
   clickMult += item.bonus;
   cpsMult += item.cps_bonus || 0;
   cps *= (1 + (item.cps_bonus || 0));
-  renderStats(); updateColRow(id); save();
+  renderStats(); renderList(); save();
 }
 
-function clickValue(){ return Math.max(1, Math.floor(power * (1 + clickMult))); }
+function clickValue(){
+  return Math.max(1, Math.floor(power * (1 + clickMult) * (1 + rebirthBonus)));
+}
 
 const clickerBtn = $('btn');
 
@@ -529,23 +731,26 @@ function handleTap(x, y){
   score += gain;
   totalEarned += gain;
   checkLevelUp();
+  spawnRipple(x, y);
   spawnFloat('+' + fmt(gain), x, y - 40);
-  renderStats(); refreshRows();
+  renderStats();
 }
 
 clickerBtn.addEventListener('pointerdown', function(e){
   e.preventDefault();
   handleTap(e.clientX, e.clientY);
 }, {passive:false});
+clickerBtn.addEventListener('touchstart', function(e){ e.preventDefault(); }, {passive:false});
+clickerBtn.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
-clickerBtn.addEventListener('touchstart', function(e){
-  e.preventDefault();
-}, {passive:false});
-
-clickerBtn.addEventListener('contextmenu', function(e){
-  e.preventDefault();
-});
-
+function spawnRipple(x, y){
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.left = x + 'px';
+  r.style.top = y + 'px';
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
 function spawnFloat(text, x, y){
   const f = document.createElement('div');
   f.className = 'floater'; f.textContent = text;
@@ -572,9 +777,10 @@ function openSettings(){
   THEMES.forEach(t => {
     const el = document.createElement('div');
     el.className = 'theme-chip' + (t.id === themeId ? ' active' : '');
-    el.innerHTML = '<div class="swatch" style="background:' + t.accent + '"></div>' + t.name;
+    el.innerHTML = '<div class="swatch ' + t.id + '"></div>' + t.name;
     el.addEventListener('click', function(){
-      themeId = t.id; applyTheme(t);
+      themeId = t.id;
+      applyTheme(t.id);
       box.querySelectorAll('.theme-chip').forEach(x => x.classList.remove('active'));
       el.classList.add('active');
       save();
@@ -595,7 +801,7 @@ function renderDaily(){
   if (daily.can){
     btn.disabled = false;
     btn.textContent = '+' + fmt(daily.bonus);
-    info.textContent = 'Серия: ' + daily.streak + ' дн.';
+    info.textContent = 'Серия: ' + daily.streak + ' дн. · Готово';
   } else {
     btn.disabled = true;
     btn.textContent = fmtTime(daily.seconds_left);
@@ -618,7 +824,7 @@ $('daily-btn').addEventListener('click', function(){
         daily.can = d.can; daily.seconds_left = d.seconds_left;
         daily.streak = d.streak; daily.bonus = d.next_bonus || 0;
       }
-      renderStats(); renderDaily(); refreshRows();
+      renderStats(); renderDaily(); renderList();
     });
 });
 
@@ -637,6 +843,30 @@ setInterval(function(){
   }
 }, 1000);
 
+function doRebirth(){
+  if (totalEarned < rebirthThreshold) return;
+  if (!confirm('Перерождение сбросит весь текущий прогресс. Продолжить?')) return;
+  fetch('/rebirth', {method:'POST'})
+    .then(r => r.json()).then(d => {
+      if (d.ok){
+        rebirths = d.rebirths;
+        rebirthBonus = d.rebirthBonus;
+        rebirthThreshold = d.rebirthThreshold;
+        score = 0; power = 1; cps = 0; lvl = 1; next = 100;
+        totalEarned = 0;
+        counts = {}; SHOP.forEach(i => counts[i.id] = 0);
+        ownedMap = {}; COLLECTION.forEach(i => ownedMap[i.id] = 0);
+        clickMult = 0; cpsMult = 0;
+        daily.can = true; daily.seconds_left = 0;
+        daily.streak = 0;
+        renderStats(); renderList(); renderDaily(); renderRebirth();
+        spawnFloat('💎 Перерождение!', window.innerWidth/2, 200);
+      } else {
+        alert('Недостаточно прогресса');
+      }
+    });
+}
+
 function save(){
   const payload = {score, power, cps, lvl, next, clickMult, cpsMult,
                    total_earned: totalEarned, theme: themeId};
@@ -645,8 +875,12 @@ function save(){
     payload['n_'+i.id] = counts[i.id]||0;
   });
   COLLECTION.forEach(i => { payload['o_'+i.id] = ownedMap[i.id] ? 1 : 0; });
-  const body = new URLSearchParams({ name: STATE.name, payload: JSON.stringify(payload) });
-  fetch('/save', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).catch(()=>{});
+  const body = new URLSearchParams({
+    name: STATE.name, payload: JSON.stringify(payload),
+    session_id: STATE.session_id || ""
+  });
+  fetch('/save', {method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).catch(()=>{});
 }
 
 let tickCounter = 0;
@@ -656,7 +890,7 @@ setInterval(function(){
     score += gain;
     totalEarned += gain;
     checkLevelUp();
-    renderStats(); refreshRows();
+    renderStats();
     tickCounter++;
     if (tickCounter >= 150){ save(); tickCounter = 0; }
   }
@@ -670,33 +904,7 @@ if (STATE.offline_gain && STATE.offline_gain > 0){
   setTimeout(() => t.remove(), 5000);
 }
 
-applyTheme(THEMES.find(x => x.id === themeId) || THEMES[0]);
+applyTheme(themeId);
 renderTabs(); renderStats(); renderDaily(); renderList();
-</script>
-<div id="cookie-banner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;max-width:520px;width:calc(100% - 32px);padding:16px 20px;border-radius:14px;background:rgba(20,25,35,.92);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.1);color:#eef2f7;font-size:13px;line-height:1.5;box-shadow:0 12px 40px rgba(0,0,0,.4);display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-  <div style="flex:1;min-width:200px">🍪 Мы используем куки для работы сессии — чтобы ты оставался залогинен.</div>
-  <button id="cookie-ok" style="background:linear-gradient(135deg,#5ce1e6,#7c9cff);color:#02060a;border:none;padding:9px 18px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer">Ок</button>
-</div>
-<script>
-(function(){
-  var banner = document.getElementById('cookie-banner');
-  var btn = document.getElementById('cookie-ok');
-  if (!banner || !btn) return;
-
-  var ok = false;
-  try { ok = localStorage.getItem('cookies_ok') === '1'; } catch(e){}
-
-  if (ok){
-    banner.remove();
-    return;
-  }
-
-  banner.style.display = 'flex';
-
-  btn.addEventListener('click', function(){
-    try { localStorage.setItem('cookies_ok', '1'); } catch(e){}
-    banner.remove();
-  });
-})();
 </script>
 </body></html>

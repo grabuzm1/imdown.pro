@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Обновления · imdown.pro</title>
+<style>
+html.theme-midnight{
+  --bg:#0f1115;
+  --bg-glow:radial-gradient(ellipse at center,
+    rgba(0,173,181,.18) 0%,
+    rgba(0,224,234,.08) 35%,
+    transparent 70%);
+  --text:#e8ecf1;
+  --muted:#8b93a1;
+  --accent:#00ADB5;
+  --accent2:#00e0ea;
+  --card-bg:rgba(255,255,255,.05);
+  --card-border:rgba(255,255,255,.1);
+  --card-hover:rgba(255,255,255,.08);
+  --card-border-hover:rgba(0,173,181,.25);
+  --btn-text:#03181a;
+  --title-grad:linear-gradient(180deg, #ffffff 0%, #9fe9ee 100%);
+  --radius:16px;
+  --blur:20px;
+}
+html.theme-sunset{
+  --bg:#1a1014;
+  --bg-glow:radial-gradient(ellipse at center,
+    rgba(255,120,80,.22) 0%,
+    rgba(200,80,140,.14) 40%,
+    transparent 70%);
+  --text:#fdf2ee;
+  --muted:#b09a9a;
+  --accent:#ff7a4a;
+  --accent2:#ff4a8b;
+  --card-bg:rgba(255,255,255,.05);
+  --card-border:rgba(255,150,120,.14);
+  --card-hover:rgba(255,255,255,.08);
+  --card-border-hover:rgba(255,120,80,.35);
+  --btn-text:#1a1014;
+  --title-grad:linear-gradient(180deg, #fff 0%, #ffb07a 55%, #ff4a8b 100%);
+  --radius:18px;
+  --blur:20px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background .4s ease, color .3s ease;
+}
+body::before{
+  content:"";
+  position:fixed;
+  top:-300px;left:50%;
+  transform:translateX(-50%);
+  width:1200px;height:900px;
+  background:var(--bg-glow);
+  filter:blur(60px);
+  z-index:-1;
+  pointer-events:none;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  max-width:820px;
+  margin:0 auto;
+  padding:24px 24px 100px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:80px;
+  padding:14px 0;
+  opacity:0;
+  animation:fadeUp .7s ease-out .05s forwards;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  font-weight:700;font-size:16px;letter-spacing:-.2px;
+  text-decoration:none;color:inherit;
+}
+.brand-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 12px var(--accent2);
+}
+.topnav{display:flex;gap:4px;align-items:center}
+.topnav > a{
+  color:var(--muted);
+  text-decoration:none;
+  font-size:14px;font-weight:500;
+  padding:8px 14px;
+  border-radius:10px;
+  transition:all .2s ease;
+}
+.topnav > a:hover{color:var(--text)}
+.topnav > a.active{color:var(--text)}
+
+.user-chip{
+  display:inline-flex;
+  align-items:center;
+  color:var(--muted);
+  background:none;
+  border:none;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:500;
+  padding:8px 14px;
+  cursor:pointer;
+  transition:color .2s ease;
+}
+.user-chip:hover{color:var(--text)}
+.nav-plain{
+  color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;
+  padding:8px 14px;border-radius:10px;transition:all .2s ease;
+}
+.nav-plain:hover{color:var(--text);background:rgba(255,255,255,.05)}
+
+.acc-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.acc-overlay.open{display:flex}
+.acc-modal{
+  width:100%;max-width:380px;background:#1a1f28;
+  border:1px solid var(--card-border);border-radius:16px;padding:24px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+}
+.acc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.acc-title{font-size:16px;font-weight:700}
+.acc-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.acc-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.acc-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--card-border)}
+.acc-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.acc-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.acc-link{
+  display:block;width:100%;padding:12px 14px;border-radius:10px;
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:500;
+  background:rgba(255,255,255,.04);border:1px solid var(--card-border);
+  cursor:pointer;transition:all .2s ease;font-family:inherit;
+  margin-bottom:8px;text-align:left;
+}
+.acc-link:hover{background:rgba(255,255,255,.08);border-color:var(--card-border-hover)}
+.acc-link.danger{color:#ff6b7a}
+.acc-link.danger:hover{background:rgba(255,107,122,.08);border-color:rgba(255,107,122,.3)}
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.theme-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 12px;border-radius:10px;
+  background:rgba(255,255,255,.04);border:2px solid transparent;
+  color:var(--text);font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s ease;
+}
+.theme-btn:hover{background:rgba(255,255,255,.08)}
+.theme-btn.active{border-color:var(--accent)}
+.swatch{width:16px;height:16px;border-radius:50%;pointer-events:none}
+.swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
+.swatch.sunset{background:linear-gradient(135deg,#ff7a4a,#ff4a8b)}
+
+/* Страница */
+.page-head{
+  text-align:center;
+  padding:20px 0 60px;
+  opacity:0;
+  animation:fadeUp .9s ease-out .15s forwards;
+}
+.page-head h1{
+  font-size:clamp(36px, 6vw, 64px);
+  font-weight:900;
+  letter-spacing:-2.5px;
+  line-height:.95;
+  margin-bottom:14px;
+  background:var(--title-grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  display:inline-block;
+}
+.page-head p{
+  font-size:16px;
+  color:var(--muted);
+  max-width:520px;
+  margin:0 auto;
+}
+
+/* Карточка обновления */
+.update{
+  position:relative;
+  padding:28px 28px 24px 48px;
+  margin-bottom:20px;
+  border-radius:var(--radius);
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
+  opacity:0;
+  animation:fadeUp .7s ease-out forwards;
+}
+.update:nth-child(1){animation-delay:.2s}
+.update:nth-child(2){animation-delay:.28s}
+.update:nth-child(3){animation-delay:.36s}
+.update:nth-child(4){animation-delay:.44s}
+.update::before{
+  content:"";
+  position:absolute;
+  left:18px;
+  top:32px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 12px var(--accent2);
+}
+.update::after{
+  content:"";
+  position:absolute;
+  left:23px;
+  top:50px;
+  bottom:24px;
+  width:2px;
+  background:linear-gradient(180deg, var(--accent), transparent);
+  opacity:.35;
+}
+.update:last-child::after{display:none}
+
+.update-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:16px;
+}
+.update-title{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:-.4px;
+  color:var(--text);
+}
+.update-date{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:600;
+  letter-spacing:.4px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--card-border);
+  white-space:nowrap;
+}
+.update-badge{
+  display:inline-block;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  padding:3px 9px;
+  border-radius:6px;
+  margin-left:10px;
+  vertical-align:middle;
+  color:var(--btn-text);
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+}
+.update-badge.big{
+  background:linear-gradient(135deg, var(--accent), var(--accent2), #b57bff);
+}
+.update-badge.maint{
+  background:rgba(255,180,80,.15);
+  color:#ffb450;
+  border:1px solid rgba(255,180,80,.35);
+}
+.update-badge.soon{
+  background:rgba(255,255,255,.05);
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.update-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.update-list li{
+  position:relative;
+  padding:7px 0 7px 22px;
+  font-size:14px;
+  line-height:1.55;
+  color:var(--text);
+}
+.update-list li::before{
+  content:"";
+  position:absolute;
+  left:6px;
+  top:15px;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:var(--accent);
+  opacity:.7;
+}
+.update-list li b{
+  color:var(--text);
+  font-weight:700;
+}
+.update-list li span{
+  color:var(--muted);
+}
+
+.update-note{
+  margin-top:16px;
+  padding:12px 16px;
+  border-radius:10px;
+  background:rgba(255,255,255,.03);
+  border-left:3px solid var(--accent);
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+/* Серая карточка — «скоро» */
+.update-soon{
+  opacity:.55;
+  border-color:rgba(255,255,255,.06);
+}
+.update-soon::before{
+  background:var(--muted);
+  box-shadow:none;
+}
+.update-soon::after{
+  background:linear-gradient(180deg, var(--muted), transparent);
+  opacity:.25;
+}
+.update-soon .update-title{color:var(--muted)}
+.update-soon .update-list li{color:var(--muted)}
+.update-soon .update-list li::before{background:var(--muted);opacity:.5}
+.update-soon .update-list li b{color:var(--muted)}
+.update-soon .update-list li span{color:var(--muted);opacity:.8}
+.update-soon .update-date{color:var(--muted);opacity:.7}
+.update-soon .update-note{color:var(--muted);opacity:.7;border-left-color:var(--muted)}
+
+@media (max-width:640px){
+  .wrap{padding:20px 16px 80px}
+  .topbar{margin-bottom:60px}
+  .topnav > a{padding:6px 10px;font-size:13px}
+  .topnav > a:not(.nav-plain){display:none}
+  .update{padding:22px 20px 20px 40px}
+  .update::before{left:14px;top:26px}
+  .update::after{left:19px;top:42px;bottom:20px}
+  .update-title{font-size:18px}
+}
+</style></head><body class="theme-sunset">
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="/"><div class="brand-dot"></div>imdown.pro</a>
+    <div class="topnav">
+      <a href="/">Главная</a>
+      <a href="/projects">Проекты</a>
+      <a href="/contact">Контакты</a>
+      <a href="/updates" class="active">Обновления</a>
+      __TOP_RIGHT__
+    </div>
+  </div>
+
+  <div class="page-head">
+    <h1>Обновления</h1>
+    <p>Что нового на imdown.pro</p>
+  </div>
+
+  <!-- СКОРО: обновление кликера -->
+  <div class="update update-soon">
+    <div class="update-head">
+      <div class="update-title">
+        Обновление Clicker Down
+        <span class="update-badge soon">Скоро</span>
+      </div>
+      <div class="update-date">10.10.2026 · 10:00–22:00</div>
+    </div>
+    <ul class="update-list">
+      <li>Новый дизайн и обновлённый интерфейс</li>
+      <li>Больше улучшений и коллекционных предметов</li>
+      <li>Переработанный магазин и ежедневные награды</li>
+      <li>Оптимизация и исправление багов</li>
+    </ul>
+    <div class="update-note">
+      Работы начнутся 10 октября с 10:00 до 22:00. Кликер может быть недоступен в течение нескольких часов.
+    </div>
+  </div>
+
+  <!-- Техническое обслуживание -->
+  <div class="update">
+    <div class="update-head">
+      <div class="update-title">
+        Техническое обслуживание
+        <span class="update-badge maint">Тех</span>
+      </div>
+      <div class="update-date">09.10.2026 · 20:00–00:00</div>
+    </div>
+    <ul class="update-list">
+      <li>Провели плановое обслуживание серверов и базы данных</li>
+      <li>Обновили конфигурацию Nginx и перезапустили все сервисы</li>
+      <li>Почистили кэш и служебные логи</li>
+      <li>Проверили стабильность работы всех проектов</li>
+    </ul>
+    <div class="update-note">
+      Сайт работал в штатном режиме. Время простоя — минимальное.
+    </div>
+  </div>
+
+  <!-- Глобальное обновление -->
+  <div class="update">
+    <div class="update-head">
+      <div class="update-title">
+        Глобальное обновление
+        <span class="update-badge big">Big</span>
+      </div>
+      <div class="update-date">08.10.2026</div>
+    </div>
+    <ul class="update-list">
+      <li><b>Полный редизайн сайта.</b> <span>Новый тёмный стиль, обновлённые карточки, плавные анимации.</span></li>
+      <li><b>Down ID.</b> <span>Единая система аккаунтов для всех проектов imdown.pro.</span></li>
+      <li><b>Две темы оформления.</b> <span>Midnight (бирюзовая) и Sunset (оранжевая).</span></li>
+      <li><b>Страница «Проекты».</b> <span>Все проекты в одном месте.</span></li>
+      <li><b>Страница «Контакты».</b> <span>Связаться со мной теперь проще.</span></li>
+      <li><b>Окно аккаунта.</b> <span>Настройки, темы и выход — в одном месте.</span></li>
+    </ul>
+    <div class="update-note">
+      Этот релиз — фундамент для будущих обновлений.
+    </div>
+  </div>
+
+  <!-- Первый релиз -->
+  <div class="update">
+    <div class="update-head">
+      <div class="update-title">
+        Первый релиз
+        <span class="update-badge">Start</span>
+      </div>
+      <div class="update-date">Начало 2026</div>
+    </div>
+    <ul class="update-list">
+      <li><b>Запуск imdown.pro.</b> <span>Личная площадка для проектов.</span></li>
+      <li><b>Clicker Down.</b> <span>Первый проект — кликер с магазином улучшений.</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Окно аккаунта -->
+<div class="acc-overlay" id="accOverlay">
+  <div class="acc-modal">
+    <div class="acc-header">
+      <div class="acc-title">Аккаунт</div>
+      <button type="button" class="acc-close" id="accClose">✕</button>
+    </div>
+    <div class="acc-section">
+      <a href="/account" class="acc-link">Настройки аккаунта</a>
+    </div>
+    <div class="acc-section">
+      <div class="acc-label">Сменить тему</div>
+      <div class="theme-grid">
+        <button type="button" class="theme-btn" data-theme="midnight">
+          <span class="swatch midnight"></span>Midnight
+        </button>
+        <button type="button" class="theme-btn" data-theme="sunset">
+          <span class="swatch sunset"></span>Sunset
+        </button>
+      </div>
+    </div>
+    <div class="acc-section">
+      <a href="/logout" class="acc-link danger">Выйти</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Тема */
+(function(){
+  var saved = 'sunset';
+  try { saved = localStorage.getItem('site_theme') || 'sunset'; } catch(e){}
+  document.documentElement.className = 'theme-' + saved;
+  document.querySelectorAll('.theme-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-theme') === saved);
+  });
+})();
+
+/* Окно аккаунта */
+(function(){
+  var overlay = document.getElementById('accOverlay');
+  var openBtn = document.getElementById('openAccount');
+  var closeBtn = document.getElementById('accClose');
+  if (openBtn && overlay) openBtn.addEventListener('click', function(){ overlay.classList.add('open'); });
+  if (closeBtn && overlay) closeBtn.addEventListener('click', function(){ overlay.classList.remove('open'); });
+  if (overlay) overlay.addEventListener('click', function(e){
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && overlay) overlay.classList.remove('open');
+  });
+})();
+
+/* Переключатель тем */
+(function(){
+  var btns = document.querySelectorAll('.theme-btn');
+  for (var i = 0; i < btns.length; i++){
+    (function(btn){
+      btn.addEventListener('click', function(){
+        var name = btn.getAttribute('data-theme');
+        document.documentElement.className = 'theme-' + name;
+        try { localStorage.setItem('site_theme', name); } catch(e){}
+        document.querySelectorAll('.theme-btn').forEach(function(o){
+          o.classList.toggle('active', o.getAttribute('data-theme') === name);
+        });
+      });
+    })(btns[i]);
+  }
+})();
+</script>
+</body></html>

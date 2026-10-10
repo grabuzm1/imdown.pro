@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Аккаунт · Down ID</title>
+<style>
+:root{
+  --text:#f4f7fc;
+  --muted:#8a93a6;
+  --accent:#5ff0ff;
+  --accent2:#8ab0ff;
+  --purple:#b57bff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:#000;
+  color:var(--text);
+  min-height:100vh;
+  padding:24px 16px 60px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  background:
+    radial-gradient(600px 400px at 20% 20%, rgba(95,240,255,.10), transparent 60%),
+    radial-gradient(600px 400px at 80% 80%, rgba(181,123,255,.10), transparent 60%);
+  pointer-events:none;
+}
+.wrap{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:520px;
+}
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+  font-size:13px;
+  color:var(--muted);
+}
+.top a{color:var(--muted);text-decoration:none}
+.top a:hover{color:var(--text)}
+.top .who b{color:var(--text);font-weight:600}
+
+.header{
+  text-align:center;
+  margin-bottom:28px;
+}
+.header .mark{
+  width:52px;
+  height:52px;
+  margin:0 auto 12px;
+  border-radius:14px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2), var(--purple));
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:24px;
+  color:#000;
+  box-shadow:0 0 30px rgba(95,240,255,.4);
+}
+.header h1{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-.5px;
+  background:linear-gradient(180deg, #fff, #b8d4ff 60%, #b57bff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  margin-bottom:4px;
+}
+.header p{color:var(--muted);font-size:13px}
+
+.card{
+  background:rgba(15,18,25,.6);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:14px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+  opacity:0;
+  transform:translateY(15px);
+  animation:fadeUp .5s ease-out forwards;
+}
+.card:nth-child(1){animation-delay:.05s}
+.card:nth-child(2){animation-delay:.12s}
+.card:nth-child(3){animation-delay:.19s}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+
+.card h2{
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:16px;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.card h2 .ico{opacity:.9}
+
+.field{margin-bottom:12px}
+.field label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:5px;
+  font-weight:500;
+}
+.field input{
+  width:100%;
+  padding:11px 14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(0,0,0,.4);
+  color:var(--text);
+  font-size:14px;
+  font-family:inherit;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.field input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(95,240,255,.15);
+}
+.field input::placeholder{color:#5a6376}
+
+.btn{
+  padding:11px 18px;
+  border-radius:10px;
+  border:none;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .2s ease;
+  font-family:inherit;
+  width:100%;
+}
+.btn-primary{
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  color:#000;
+  box-shadow:0 6px 20px rgba(95,240,255,.3);
+}
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 28px rgba(95,240,255,.5);
+}
+.btn-danger{
+  background:rgba(255,107,122,.12);
+  color:#ff6b7a;
+  border:1px solid rgba(255,107,122,.3);
+}
+.btn-danger:hover{background:rgba(255,107,122,.2)}
+.btn-ghost{
+  background:rgba(255,255,255,.06);
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,.1);
+}
+.btn-ghost:hover{color:var(--text);background:rgba(255,255,255,.1)}
+
+.msg{
+  text-align:center;
+  font-size:13px;
+  padding:10px 14px;
+  margin-bottom:16px;
+  border-radius:10px;
+  opacity:0;
+  animation:fadeUp .4s ease-out .3s forwards;
+}
+.msg.ok{
+  color:#4ade80;
+  background:rgba(74,222,128,.08);
+  border:1px solid rgba(74,222,128,.25);
+}
+.msg.err{
+  color:#ff6b7a;
+  background:rgba(255,107,122,.08);
+  border:1px solid rgba(255,107,122,.25);
+}
+</style></head><body>
+<div class="wrap">
+
+  <div class="top">
+    <a href="/">← imdown.pro</a>
+    <div class="who">Логин: <b>__NAME__</b></div>
+  </div>
+
+  <div class="header">
+    <div class="mark">D</div>
+    <h1>Аккаунт</h1>
+    <p>Управление Down ID</p>
+  </div>
+
+  __MSG__
+
+  <form class="card" method="post" action="/change_login">
+    <h2><span class="ico">👤</span>Сменить логин</h2>
+    <div class="field">
+      <label>Текущий пароль</label>
+      <input type="password" name="current_pass" required minlength="4"
+             autocomplete="current-password" placeholder="••••••">
+    </div>
+    <div class="field">
+      <label>Новый логин</label>
+      <input type="text" name="new_login" required minlength="3" maxlength="20"
+             pattern="[A-Za-z0-9_]+" placeholder="3-20, A-Z a-z 0-9 _"
+             autocomplete="username">
+    </div>
+    <button class="btn btn-primary" type="submit">Сменить логин</button>
+  </form>
+
+  <form class="card" method="post" action="/change_password">
+    <h2><span class="ico">🔒</span>Сменить пароль</h2>
+    <div class="field">
+      <label>Текущий пароль</label>
+      <input type="password" name="current_pass" required minlength="4"
+             autocomplete="current-password" placeholder="••••••">
+    </div>
+    <div class="field">
+      <label>Новый пароль</label>
+      <input type="password" name="new_pass" required minlength="4"
+             autocomplete="new-password" placeholder="Мин. 4 символа">
+    </div>
+    <div class="field">
+      <label>Повтори новый пароль</label>
+      <input type="password" name="new_pass2" required minlength="4"
+             autocomplete="new-password" placeholder="Ещё раз">
+    </div>
+    <button class="btn btn-primary" type="submit">Сменить пароль</button>
+  </form>
+
+  <div class="card">
+    <h2><span class="ico">↩️</span>Сессия</h2>
+    <a href="/logout?next=/" style="text-decoration:none">
+      <button class="btn btn-ghost" type="button">Выйти из аккаунта</button>
+    </a>
+  </div>
+
+</div>
+</body></html>

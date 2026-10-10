@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Down ID · Вход</title>
+<style>
+:root{
+  --text:#f4f7fc;
+  --muted:#8a93a6;
+  --accent:#5ff0ff;
+  --accent2:#8ab0ff;
+  --purple:#b57bff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:#000;
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  background:
+    radial-gradient(600px 400px at 20% 20%, rgba(95,240,255,.10), transparent 60%),
+    radial-gradient(600px 400px at 80% 80%, rgba(181,123,255,.10), transparent 60%);
+  pointer-events:none;
+}
+.card{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:400px;
+  background:rgba(15,18,25,.6);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:36px 28px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  opacity:0;
+  transform:translateY(20px);
+  animation:fadeUp .6s ease-out forwards;
+}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+
+.logo{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:8px;
+}
+.logo-mark{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2), var(--purple));
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:20px;
+  color:#000;
+  box-shadow:0 0 24px rgba(95,240,255,.4);
+}
+.logo-name{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-.5px;
+  background:linear-gradient(180deg, #fff, #b8d4ff 60%, #b57bff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.sub{
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:26px;
+}
+.field{position:relative;margin-bottom:12px}
+.field input{
+  width:100%;
+  padding:13px 15px;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(0,0,0,.4);
+  color:var(--text);
+  font-size:14px;
+  font-family:inherit;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.field input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(95,240,255,.15);
+}
+.field input::placeholder{color:#5a6376}
+
+.btn{
+  width:100%;
+  padding:13px 16px;
+  border-radius:11px;
+  border:none;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .2s ease, filter .15s ease;
+  font-family:inherit;
+}
+.btn-primary{
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  color:#000;
+  margin-top:8px;
+  box-shadow:0 8px 24px rgba(95,240,255,.35);
+}
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 32px rgba(95,240,255,.5);
+}
+.btn-primary:active{transform:translateY(0) scale(.99)}
+
+.err{
+  color:#ff6b7a;
+  font-size:13px;
+  text-align:center;
+  padding:10px 12px;
+  margin-top:14px;
+  border-radius:9px;
+  background:rgba(255,107,122,.08);
+  border:1px solid rgba(255,107,122,.25);
+}
+
+.foot{
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  margin-top:22px;
+  padding-top:22px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.foot a{
+  color:var(--accent);
+  text-decoration:none;
+  font-weight:600;
+}
+.foot a:hover{text-decoration:underline}
+
+.support{
+  text-align:center;
+  margin-top:14px;
+  font-size:12px;
+  color:var(--muted);
+  opacity:.7;
+}
+.support button{
+  background:none;
+  border:none;
+  color:var(--muted);
+  text-decoration:underline;
+  cursor:pointer;
+  font-size:12px;
+  font-family:inherit;
+  padding:0;
+}
+.support button:hover{color:var(--text)}
+
+.back{
+  position:absolute;
+  top:20px;
+  left:20px;
+  color:var(--muted);
+  text-decoration:none;
+  font-size:13px;
+  transition:color .15s ease;
+}
+.back:hover{color:var(--text)}
+</style></head><body>
+<a class="back" href="/">← imdown.pro</a>
+
+<form class="card" method="post" action="/login_user">
+  <div class="logo">
+    <div class="logo-mark">D</div>
+    <div class="logo-name">Down ID</div>
+  </div>
+  <div class="sub">Войди, чтобы продолжить</div>
+
+  <input type="hidden" name="next" value="__NEXT__">
+
+  <div class="field">
+    <input type="text" name="u_login"
+           placeholder="Логин"
+           required minlength="3" maxlength="20" autocomplete="username">
+  </div>
+  <div class="field">
+    <input type="password" name="u_pass"
+           placeholder="Пароль"
+           required minlength="4" autocomplete="current-password">
+  </div>
+
+  <button class="btn btn-primary" type="submit">Войти</button>
+
+  __ERROR__
+
+  <div class="support">
+  Забыли пароль?
+  <button type="button" id="supportBtn">Связаться с поддержкой</button>
+</div>
+
+  <div class="foot">
+    Нет аккаунта? <a href="/register">Создать Down ID</a>
+  </div>
+</form>
+<script>
+(function(){
+  var btn = document.getElementById('supportBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    alert('В разработке');
+  });
+})();
+</script>
+</body></html>

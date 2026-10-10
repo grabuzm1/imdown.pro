@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Clicker Down — превью</title>
+<style>
+:root{
+  --bg:#1a1014;
+  --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
+    rgba(255,120,80,.14) 0%,
+    rgba(200,80,140,.06) 40%,
+    transparent 70%);
+  --text:#fdf2ee;
+  --muted:#a89292;
+  --accent:#ff7a4a;
+  --accent2:#ff4a8b;
+  --gold:#ffd166;
+  --ok:#4ade80;
+  --card-bg:rgba(255,255,255,.035);
+  --card-border:rgba(255,150,120,.10);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  background-image:var(--bg-glow);
+  background-attachment:fixed;
+  min-height:100vh;
+  padding:24px 20px 60px;
+}
+.wrap{max-width:440px;margin:0 auto}
+
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:28px;font-size:14px;color:var(--muted);
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--text)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent2)}
+.nav{display:flex;gap:10px;align-items:center}
+.nav a{color:var(--muted);text-decoration:none;font-size:14px;transition:color .2s}
+.nav a:hover{color:var(--text)}
+
+/* Кнопка "На главную" — выделенная */
+.nav .btn-home{
+  color:var(--accent);
+  border:1px solid rgba(255,122,74,.45);
+  padding:6px 14px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.2px;
+  transition:all .15s ease;
+}
+.nav .btn-home:hover{
+  background:rgba(255,122,74,.08);
+  color:var(--accent);
+  border-color:rgba(255,122,74,.7);
+}
+
+.clicker-zone{
+  position:relative;
+  border-radius:22px;
+  padding:44px 20px 36px;
+  margin-bottom:12px;
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--card-border);
+  overflow:hidden;
+  cursor:pointer;
+  text-align:center;
+  user-select:none;
+  transition:transform .08s ease, border-color .2s ease;
+}
+.clicker-zone::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 100%, rgba(255,122,74,.10) 0%, transparent 60%);
+  pointer-events:none;
+}
+.clicker-zone:active{transform:scale(.99); border-color:rgba(255,150,120,.22)}
+
+.score{
+  position:relative;
+  font-size:52px;
+  font-weight:900;
+  letter-spacing:-2.5px;
+  line-height:1;
+  margin-bottom:14px;
+  background:linear-gradient(180deg,#fff 0%, #ffb07a 55%, #ff4a8b 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  z-index:1;
+  word-break:break-all;
+}
+.score-unit{font-size:22px;font-weight:700;opacity:.8;margin-left:3px}
+.cps{
+  position:relative;z-index:1;
+  display:flex;justify-content:center;gap:14px;
+  font-size:13px;color:var(--muted);
+  margin-bottom:24px;
+}
+.cps b{color:var(--text);font-weight:700}
+.cps .gold{color:var(--gold)}
+
+.tap-hint{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11px;color:var(--muted);
+  padding:5px 12px;border-radius:999px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--card-border);
+  position:relative;z-index:1;
+  letter-spacing:.3px;
+}
+.tap-hint .pulse{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  animation:pulseDot 1.6s ease-in-out infinite;
+}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+
+.tabs{
+  display:flex;gap:0;
+  margin-bottom:22px;
+  border-bottom:1px solid var(--card-border);
+}
+.tab{
+  flex:1;padding:12px 0;
+  text-align:center;font-size:13px;font-weight:600;
+  color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:all .2s ease;
+  letter-spacing:.2px;
+}
+.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+
+.level{
+  padding:14px 16px;border-radius:12px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  margin-bottom:12px;
+}
+.lhead{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+.lhead b{color:var(--text);font-weight:700}
+.lbar{height:3px;background:rgba(255,255,255,.05);border-radius:999px;overflow:hidden}
+.lfill{
+  height:100%;width:38%;
+  background:linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius:999px;
+}
+
+.daily{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:12px;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  margin-bottom:24px;
+}
+.daily .ico{font-size:17px;opacity:.9}
+.daily .txt{flex:1;min-width:0;font-size:11px;color:var(--muted);line-height:1.3}
+.daily .txt b{color:var(--text);display:block;font-size:13px;font-weight:700;margin-bottom:1px}
+.daily .btn{
+  background:transparent;
+  color:var(--accent);
+  border:1px solid rgba(255,122,74,.45);
+  padding:6px 12px;border-radius:8px;
+  font-size:11px;font-weight:700;
+  cursor:pointer;white-space:nowrap;font-family:inherit;
+  transition:all .15s ease;
+  letter-spacing:.2px;
+}
+.daily .btn:hover{background:rgba(255,122,74,.08)}
+
+.shead{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;
+}
+.shead h3{
+  font-size:11px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);
+}
+.modes{
+  display:flex;gap:2px;
+  background:rgba(255,255,255,.03);
+  padding:3px;border-radius:8px;
+  border:1px solid var(--card-border);
+}
+.mode{
+  padding:4px 12px;font-size:11px;font-weight:700;
+  color:var(--muted);cursor:pointer;border-radius:6px;
+  transition:all .15s ease;
+}
+.mode:hover{color:var(--text)}
+.mode.active{color:#1a1014;background:var(--accent)}
+
+.list{display:flex;flex-direction:column}
+.item{
+  display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;
+  padding:14px 0;
+  border-bottom:1px solid var(--card-border);
+}
+.item:last-child{border-bottom:none}
+.item.locked{opacity:.4}
+
+.icon{
+  width:44px;height:44px;border-radius:11px;
+  display:grid;place-items:center;font-size:19px;
+  background:rgba(255,255,255,.035);
+  border:1px solid var(--card-border);
+}
+.title{font-size:14px;font-weight:700;margin-bottom:2px}
+.sub{font-size:12px;color:var(--muted)}
+.sub b{color:var(--ok);font-weight:600}
+
+.buy{
+  background:transparent;
+  color:var(--accent);
+  border:1px solid rgba(255,122,74,.4);
+  padding:7px 12px;border-radius:8px;
+  font-size:12px;font-weight:700;
+  cursor:pointer;
+  min-width:80px;text-align:center;line-height:1.25;
+  font-family:inherit;
+  transition:all .15s ease;
+  letter-spacing:.2px;
+}
+.buy:hover:not(:disabled){background:rgba(255,122,74,.08)}
+.buy:disabled{
+  border-color:var(--card-border);
+  color:var(--muted);
+  cursor:not-allowed;
+}
+
+@media (max-width:420px){
+  .score{font-size:44px;letter-spacing:-2px}
+  .clicker-zone{padding:36px 16px 30px}
+  .item{grid-template-columns:40px 1fr auto;gap:12px}
+  .icon{width:40px;height:40px;font-size:17px}
+  .nav{gap:6px}
+  .nav .btn-home{padding:5px 10px;font-size:11px}
+}
+</style></head><body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><div class="dot"></div>imdown.pro</div>
+    <div class="nav">
+      <a href="#" title="Настройки">⚙</a>
+      <a href="/" class="btn-home">На главную</a>
+      <a href="/hub">← DownGames</a>
+    </div>
+  </div>
+
+  <div class="clicker-zone">
+    <div class="score">1.24T<span class="score-unit">⚡</span></div>
+    <div class="cps">
+      <span>В сек: <b>48.2K</b></span>
+      <span class="gold">+120% / +45%</span>
+    </div>
+    <div class="tap-hint">
+      <span class="pulse"></span>
+      Тапай по экрану
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Улучшения</div>
+    <div class="tab">Коллекция</div>
+  </div>
+
+  <div class="level">
+    <div class="lhead"><span>Уровень <b>24</b></span><span>1.24T / 3.28T</span></div>
+    <div class="lbar"><div class="lfill"></div></div>
+  </div>
+
+  <div class="daily">
+    <span class="ico">🎁</span>
+    <div class="txt">
+      <b>Награда дня</b>
+      <span>Серия: 5 дн. · Готово</span>
+    </div>
+    <button class="btn">+2.4K</button>
+  </div>
+
+  <div class="shead">
+    <h3>Улучшения</h3>
+    <div class="modes">
+      <div class="mode active">×1</div>
+      <div class="mode">Max</div>
+    </div>
+  </div>
+
+  <div class="list">
+
+    <div class="item">
+      <div class="icon">👆</div>
+      <div><div class="title">Палец-робот</div><div class="sub">+0.2/с · <b>42</b></div></div>
+      <button class="buy">15 ⚡</button>
+    </div>
+
+    <div class="item">
+      <div class="icon">🌾</div>
+      <div><div class="title">Ферма</div><div class="sub">+1.5/с · <b>30</b></div></div>
+      <button class="buy">100 ⚡</button>
+    </div>
+
+    <div class="item">
+      <div class="icon">⛏️</div>
+      <div><div class="title">Шахта</div><div class="sub">+8/с · <b>18</b></div></div>
+      <button class="buy">500 ⚡</button>
+    </div>
+
+    <div class="item">
+      <div class="icon">🏭</div>
+      <div><div class="title">Завод</div><div class="sub">+50/с · <b>11</b></div></div>
+      <button class="buy">3K ⚡</button>
+    </div>
+
+    <div class="item">
+      <div class="icon">🔬</div>
+      <div><div class="title">Лаборатория</div><div class="sub">+300/с · <b>6</b></div></div>
+      <button class="buy">15K ⚡</button>
+    </div>
+
+    <div class="item">
+      <div class="icon">☢️</div>
+      <div><div class="title">Реактор</div><div class="sub">+2K/с · <b>3</b></div></div>
+      <button class="buy">90K ⚡</button>
+    </div>
+
+    <div class="item locked">
+      <div class="icon">🛰️</div>
+      <div><div class="title">Космостанция</div><div class="sub">+12K/с · <b>0</b></div></div>
+      <button class="buy" disabled>500K ⚡</button>
+    </div>
+
+    <div class="item locked">
+      <div class="icon">🌕</div>
+      <div><div class="title">Лунная база</div><div class="sub">+80K/с · <b>0</b></div></div>
+      <button class="buy" disabled>3M ⚡</button>
+    </div>
+
+  </div>
+
+</div>
+
+</body></html>

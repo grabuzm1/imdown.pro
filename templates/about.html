@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Видео · imdown.pro</title>
+<style>
+:root{
+  --text:#f4f7fc;
+  --muted:#9aa5bd;
+  --accent:#5ff0ff;
+  --accent2:#8ab0ff;
+  --purple:#b57bff;
+  --bg-deep:#0a0e1a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text);
+  background:#05070d;min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-40vmax;z-index:-2;
+  background:
+    radial-gradient(45vmax 45vmax at 20% 20%, rgba(124,156,255,.35), transparent 60%),
+    radial-gradient(40vmax 40vmax at 80% 30%, rgba(92,225,230,.30), transparent 60%),
+    radial-gradient(50vmax 50vmax at 50% 90%, rgba(160,107,255,.30), transparent 60%);
+  filter:blur(40px);animation:bgmove 18s ease-in-out infinite}
+@keyframes bgmove{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4vmax,-2vmax) scale(1.08)}66%{transform:translate(-3vmax,3vmax) scale(1.05)}}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size:3px 3px;opacity:.5}
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:#fff;opacity:.6;
+  animation:twinkle 3s ease-in-out infinite;box-shadow:0 0 6px #fff}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.9;transform:scale(1.1)}}
+.wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:32px 20px 60px}
+.nav{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:60px;backdrop-filter:blur(10px);background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 20px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.brand-dot{width:9px;height:9px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 0 12px var(--accent2);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5;transform:scale(1.4)}}
+.links{display:flex;gap:24px}
+.links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500}
+.links a:hover{color:var(--text)}
+h1{font-size:50px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:32px;
+  background:linear-gradient(180deg,#fff 0%, #b8c8ff 50%, var(--purple) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.video-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:16 / 9;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background:#000;
+}
+.video-wrap iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:none;
+}
+@media (max-width:640px){
+  h1{font-size:34px}
+  .nav{margin-bottom:40px;padding:12px 16px}
+  .links{gap:16px}
+  .links a{font-size:13px}
+}
+#cookie-banner{display:none;position:fixed;bottom:16px;left:50%;
+  transform:translateX(-50%);z-index:9999;max-width:520px;width:calc(100% - 32px);
+  padding:16px 20px;border-radius:14px;
+  background:rgba(20,25,35,.92);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.1);
+  color:#eef2f7;font-size:13px;line-height:1.5;
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#cookie-banner .cb-text{flex:1;min-width:200px}
+#cookie-ok{background:linear-gradient(135deg,#5ce1e6,#7c9cff);
+  color:#02060a;border:none;padding:9px 18px;border-radius:10px;
+  font-weight:600;font-size:13px;cursor:pointer}
+/* 3D-наклон карточек */
+.card, .btn {
+  transform-style: preserve-3d;
+  transition: transform .3s cubic-bezier(.2,.7,.3,1),
+              box-shadow .3s ease,
+              background .2s ease,
+              border-color .2s ease;
+  will-change: transform;
+  perspective: 800px;
+}
+
+/* Карточки */
+.card:hover {
+  transform: translateY(-6px) rotateX(4deg) rotateY(-4deg) scale(1.02);
+  box-shadow: 0 20px 40px rgba(124,156,255,.25),
+              0 8px 16px rgba(0,0,0,.4);
+}
+
+/* Чередуем наклон для чётных карточек */
+.card:nth-child(even):hover {
+  transform: translateY(-6px) rotateX(4deg) rotateY(4deg) scale(1.02);
+}
+
+/* Кнопки */
+.btn:hover {
+  transform: translateY(-3px) rotateX(6deg) scale(1.05);
+  box-shadow: 0 14px 30px rgba(92,225,230,.5);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 18px 40px rgba(92,225,230,.6);
+}
+</style></head><body>
+<div class="stars" id="stars"></div>
+<div class="wrap">
+  <div class="nav">
+    <a class="brand" href="/" style="text-decoration:none;color:inherit">
+  <div class="brand-dot"></div>imdown.pro
+</a>
+    <div class="links">
+      <a href="/">Главная</a>
+      <a href="/about">Видео</a>
+      <a href="/contact">Контакты</a>
+      <a href="/updates">Обновления</a>
+    </div>
+  </div>
+
+
+  <div class="video-wrap">
+    <iframe
+      src="https://www.youtube.com/watch?v=IkCh8VfN2d4"
+      title="YouTube video"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>
+  </div>
+</div>
+
+<div id="cookie-banner">
+  <div class="cb-text">🍪 Мы используем куки для работы сессии — чтобы ты оставался залогинен.</div>
+  <button id="cookie-ok">Ок</button>
+</div>
+
+<script>
+(function(){
+  const box = document.getElementById('stars');
+  for (let i=0;i<50;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random()*2 + 1;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = Math.random()*100 + '%';
+    s.style.top = Math.random()*100 + '%';
+    s.style.animationDelay = (Math.random()*3) + 's';
+    s.style.animationDuration = (2 + Math.random()*3) + 's';
+    box.appendChild(s);
+  }
+})();
+(function(){
+  try {
+    if (!localStorage.getItem('cookies_ok')) {
+      const b = document.getElementById('cookie-banner');
+      b.style.display = 'flex';
+      document.getElementById('cookie-ok').addEventListener('click', function(){
+        localStorage.setItem('cookies_ok', '1');
+        b.style.display = 'none';
+      });
+    }
+  } catch(e) {}
+})();
+</script>
+</body></html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Контакты · imdown.pro</title>
+<style>
+html.theme-midnight{
+  --bg:#0f1115;
+  --bg-glow:radial-gradient(ellipse at center,
+    rgba(0,173,181,.18) 0%,
+    rgba(0,224,234,.08) 35%,
+    transparent 70%);
+  --text:#e8ecf1;
+  --muted:#8b93a1;
+  --accent:#00ADB5;
+  --accent2:#00e0ea;
+  --card-bg:rgba(255,255,255,.05);
+  --card-border:rgba(255,255,255,.1);
+  --card-hover:rgba(255,255,255,.08);
+  --card-glow:rgba(0,224,234,.15);
+  --card-border-hover:rgba(0,173,181,.25);
+  --btn-text:#03181a;
+  --title-grad:linear-gradient(180deg, #ffffff 0%, #9fe9ee 100%);
+  --radius:16px;
+  --blur:20px;
+}
+html.theme-sunset{
+  --bg:#1a1014;
+  --bg-glow:radial-gradient(ellipse at center,
+    rgba(255,120,80,.22) 0%,
+    rgba(200,80,140,.14) 40%,
+    transparent 70%);
+  --text:#fdf2ee;
+  --muted:#b09a9a;
+  --accent:#ff7a4a;
+  --accent2:#ff4a8b;
+  --card-bg:rgba(255,255,255,.05);
+  --card-border:rgba(255,150,120,.14);
+  --card-hover:rgba(255,255,255,.08);
+  --card-glow:rgba(255,120,80,.2);
+  --card-border-hover:rgba(255,120,80,.35);
+  --btn-text:#1a1014;
+  --title-grad:linear-gradient(180deg, #fff 0%, #ffb07a 55%, #ff4a8b 100%);
+  --radius:18px;
+  --blur:20px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background .4s ease, color .3s ease;
+}
+body::before{
+  content:"";
+  position:fixed;
+  top:-300px;left:50%;
+  transform:translateX(-50%);
+  width:1200px;height:900px;
+  background:var(--bg-glow);
+  filter:blur(60px);
+  z-index:-1;
+  pointer-events:none;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  max-width:1100px;
+  margin:0 auto;
+  padding:24px 24px 100px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:80px;
+  padding:14px 0;
+  opacity:0;
+  animation:fadeUp .7s ease-out .05s forwards;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  font-weight:700;font-size:16px;letter-spacing:-.2px;
+  text-decoration:none;color:inherit;
+}
+.brand-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 12px var(--accent2);
+}
+.topnav{display:flex;gap:4px;align-items:center}
+.topnav > a{
+  color:var(--muted);
+  text-decoration:none;
+  font-size:14px;font-weight:500;
+  padding:8px 14px;
+  border-radius:10px;
+  transition:all .2s ease;
+}
+.topnav > a:hover{color:var(--text)}
+.topnav > a.active{color:var(--text)}
+
+.user-chip{
+  display:inline-flex;
+  align-items:center;
+  color:var(--muted);
+  background:none;
+  border:none;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:500;
+  padding:8px 14px;
+  cursor:pointer;
+  transition:color .2s ease;
+}
+.user-chip:hover{color:var(--text)}
+.nav-plain{
+  color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;
+  padding:8px 14px;border-radius:10px;transition:all .2s ease;
+}
+.nav-plain:hover{color:var(--text);background:rgba(255,255,255,.05)}
+
+.acc-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.acc-overlay.open{display:flex}
+.acc-modal{
+  width:100%;max-width:380px;background:#1a1f28;
+  border:1px solid var(--card-border);border-radius:16px;padding:24px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+}
+.acc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.acc-title{font-size:16px;font-weight:700}
+.acc-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.acc-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.acc-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--card-border)}
+.acc-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.acc-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.acc-link{
+  display:block;width:100%;padding:12px 14px;border-radius:10px;
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:500;
+  background:rgba(255,255,255,.04);border:1px solid var(--card-border);
+  cursor:pointer;transition:all .2s ease;font-family:inherit;
+  margin-bottom:8px;text-align:left;
+}
+.acc-link:hover{background:rgba(255,255,255,.08);border-color:var(--card-border-hover)}
+.acc-link.danger{color:#ff6b7a}
+.acc-link.danger:hover{background:rgba(255,107,122,.08);border-color:rgba(255,107,122,.3)}
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.theme-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 12px;border-radius:10px;
+  background:rgba(255,255,255,.04);border:2px solid transparent;
+  color:var(--text);font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s ease;
+}
+.theme-btn:hover{background:rgba(255,255,255,.08)}
+.theme-btn.active{border-color:var(--accent)}
+.swatch{width:16px;height:16px;border-radius:50%;pointer-events:none}
+.swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
+.swatch.sunset{background:linear-gradient(135deg,#ff7a4a,#ff4a8b)}
+
+.page-head{
+  text-align:center;
+  padding:20px 0 80px;
+  opacity:0;
+  animation:fadeUp .9s ease-out .15s forwards;
+}
+.page-head h1{
+  font-size:clamp(40px, 7vw, 72px);
+  font-weight:900;
+  letter-spacing:-3px;
+  line-height:.95;
+  margin-bottom:16px;
+  background:var(--title-grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  display:inline-block;
+}
+.page-head p{
+  font-size:17px;
+  color:var(--muted);
+  max-width:600px;
+  margin:0 auto;
+}
+
+.contacts{
+  max-width:560px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.contact-item{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:20px 24px;
+  border-radius:var(--radius);
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  backdrop-filter:blur(var(--blur));
+  -webkit-backdrop-filter:blur(var(--blur));
+  text-decoration:none;
+  color:var(--text);
+  transition:all .25s ease;
+  transform-style:preserve-3d;
+  will-change:transform;
+  position:relative;
+  overflow:hidden;
+}
+.contact-item::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:var(--radius);
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),
+    var(--card-glow), transparent 60%);
+  opacity:0;
+  transition:opacity .3s ease;
+  pointer-events:none;
+}
+.contact-item:hover{
+  transform:translateY(-3px) rotateX(var(--rx,0)) rotateY(var(--ry,0));
+  background:var(--card-hover);
+  border-color:var(--card-border-hover);
+  box-shadow:0 20px 50px var(--card-glow), 0 10px 20px rgba(0,0,0,.5);
+}
+.contact-item:hover::after{opacity:1}
+
+.contact-ico{
+  width:48px;
+  height:48px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--card-border);
+  flex-shrink:0;
+}
+.contact-info{flex:1}
+.contact-label{
+  font-size:15px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:2px;
+}
+.contact-value{
+  font-size:13px;
+  color:var(--muted);
+}
+.contact-arrow{
+  color:var(--muted);
+  font-size:18px;
+  transition:transform .25s ease, color .25s ease;
+}
+.contact-item:hover .contact-arrow{
+  transform:translateX(4px);
+  color:var(--accent);
+}
+
+@media (max-width:900px){
+  .contacts{max-width:100%}
+}
+@media (max-width:640px){
+  .wrap{padding:20px 16px 80px}
+  .topbar{margin-bottom:60px}
+  .topnav > a{padding:6px 10px;font-size:13px}
+  .topnav > a:not(.nav-plain){display:none}
+  .contact-item:hover{transform:none}
+}
+</style></head><body class="theme-midnight">
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="/"><div class="brand-dot"></div>imdown.pro</a>
+    <div class="topnav">
+      <a href="/">Главная</a>
+      <a href="/projects">Проекты</a>
+      <a href="/contact" class="active">Контакты</a>
+      <a href="/updates">Обновления</a>
+      __TOP_RIGHT__
+    </div>
+  </div>
+
+  <div class="page-head">
+    <h1>Контакты</h1>
+    <p>Связаться со мной можно здесь.</p>
+  </div>
+
+  <div class="contacts">
+
+    <a class="contact-item" href="https://t.me/grabuzm" target="_blank" rel="noopener">
+      <div class="contact-ico">✈</div>
+      <div class="contact-info">
+        <div class="contact-label">Telegram</div>
+        <div class="contact-value">@grabuzm</div>
+      </div>
+      <div class="contact-arrow">→</div>
+    </a>
+
+    <a class="contact-item" href="https://discord.com/users/1149300946862616596" target="_blank" rel="noopener">
+      <div class="contact-ico">◆</div>
+      <div class="contact-info">
+        <div class="contact-label">Discord</div>
+        <div class="contact-value">grabuzm</div>
+      </div>
+      <div class="contact-arrow">→</div>
+    </a>
+
+  </div>
+
+</div>
+
+<div class="acc-overlay" id="accOverlay">
+  <div class="acc-modal">
+    <div class="acc-header">
+      <div class="acc-title">Аккаунт</div>
+      <button type="button" class="acc-close" id="accClose">✕</button>
+    </div>
+    <div class="acc-section">
+      <a href="/account" class="acc-link">Настройки аккаунта</a>
+    </div>
+    <div class="acc-section">
+      <div class="acc-label">Сменить тему</div>
+      <div class="theme-grid">
+        <button type="button" class="theme-btn" data-theme="midnight">
+          <span class="swatch midnight"></span>Midnight
+        </button>
+        <button type="button" class="theme-btn" data-theme="sunset">
+          <span class="swatch sunset"></span>Sunset
+        </button>
+      </div>
+    </div>
+    <div class="acc-section">
+      <a href="/logout" class="acc-link danger">Выйти</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var saved = 'midnight';
+  try { saved = localStorage.getItem('site_theme') || 'midnight'; } catch(e){}
+  document.documentElement.className = 'theme-' + saved;
+  document.querySelectorAll('.theme-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-theme') === saved);
+  });
+})();
+
+(function(){
+  var overlay = document.getElementById('accOverlay');
+  var openBtn = document.getElementById('openAccount');
+  var closeBtn = document.getElementById('accClose');
+  if (openBtn && overlay) openBtn.addEventListener('click', function(){ overlay.classList.add('open'); });
+  if (closeBtn && overlay) closeBtn.addEventListener('click', function(){ overlay.classList.remove('open'); });
+  if (overlay) overlay.addEventListener('click', function(e){
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && overlay) overlay.classList.remove('open');
+  });
+})();
+
+(function(){
+  var btns = document.querySelectorAll('.theme-btn');
+  for (var i = 0; i < btns.length; i++){
+    (function(btn){
+      btn.addEventListener('click', function(){
+        var name = btn.getAttribute('data-theme');
+        document.documentElement.className = 'theme-' + name;
+        try { localStorage.setItem('site_theme', name); } catch(e){}
+        document.querySelectorAll('.theme-btn').forEach(function(o){
+          o.classList.toggle('active', o.getAttribute('data-theme') === name);
+        });
+      });
+    })(btns[i]);
+  }
+})();
+
+(function(){
+  var items = document.querySelectorAll('.contact-item');
+  for (var i = 0; i < items.length; i++){
+    (function(item){
+      item.addEventListener('mousemove', function(e){
+        var r = item.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width;
+        var y = (e.clientY - r.top) / r.height;
+        item.style.setProperty('--rx', ((0.5 - y) * 6) + 'deg');
+        item.style.setProperty('--ry', ((x - 0.5) * 6) + 'deg');
+        item.style.setProperty('--mx', (x * 100) + '%');
+        item.style.setProperty('--my', (y * 100) + '%');
+      });
+      item.addEventListener('mouseleave', function(){
+        item.style.setProperty('--rx', '0deg');
+        item.style.setProperty('--ry', '0deg');
+        item.style.setProperty('--mx', '50%');
+        item.style.setProperty('--my', '50%');
+      });
+    })(items[i]);
+  }
+})();
+</script>
+</body></html>

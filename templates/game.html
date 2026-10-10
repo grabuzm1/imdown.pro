@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>clicker down</title>
+<style>
+:root{
+  --bg:#0f1115;--card:#171b22;--accent:#00ADB5;--accent2:#00e0ea;
+  --text:#e8ecf1;--muted:#8b93a1;--ok:#3ddc97;--gold:#ffd166;
+  --line:#222731;--radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);
+  display:flex;justify-content:center;align-items:flex-start;
+  min-height:100vh;padding:22px 18px 40px;
+  touch-action:pan-y;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:contain;font-size:14px;
+}
+.big-btn,.buy,.mode,.tab,.theme-chip,.close-x,.icon-btn,.hub-link,.clicker-card{touch-action:none}
+.wrap{width:100%;max-width:400px}
+
+body.theme-soft{--line:#d5dbe6;--radius:12px}
+body.theme-soft .big-btn{background:#ffffff;border:2px solid #d5dbe6;color:#1a2030;font-weight:700}
+body.theme-soft .clicker-card:active .big-btn{background:#eef1f6;border-color:var(--accent)}
+body.theme-soft .bar{background:#d5dbe6}
+body.theme-soft .icon{background:#eef1f6}
+body.theme-soft .item{border-color:#e8ecf4}
+body.theme-soft .title{color:#1a2030}
+body.theme-soft .sub{color:#6b7484}
+body.theme-soft .buy{border-color:#c8d0de;color:#4a5568}
+body.theme-soft .buy:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:#f5f7fc}
+body.theme-soft .daily{border-color:#d5dbe6;background:#ffffff}
+body.theme-soft .modal{background:#ffffff;border-color:#d5dbe6}
+body.theme-soft .theme-chip{border-color:#d5dbe6;color:#6b7484}
+body.theme-soft .close-x{border-color:#d5dbe6;color:#6b7484}
+body.theme-soft .tab{color:#6b7484}
+body.theme-soft .tab.active{color:#1a2030}
+body.theme-soft .score{color:#1a2030}
+body.theme-soft .stats{color:#6b7484}
+body.theme-soft .clicker-card{background:#ffffff;border-color:#d5dbe6}
+
+body.theme-retro{--radius:0;font-family:'Courier New',monospace}
+body.theme-retro .big-btn{border-radius:50%;border:2px solid var(--accent)}
+body.theme-retro .item{border-bottom-style:dashed}
+body.theme-glass{--line:rgba(255,255,255,.12)}
+body.theme-glass .big-btn{background:rgba(255,255,255,.06);backdrop-filter:blur(10px)}
+body.theme-glass .modal{background:rgba(20,25,32,.85);backdrop-filter:blur(12px)}
+body.theme-glass .clicker-card{background:rgba(255,255,255,.05);backdrop-filter:blur(10px)}
+
+.top{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:24px;color:var(--muted);font-size:13px}
+.top .who b{color:var(--text);font-weight:500}
+.beta{display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;
+  color:var(--gold);background:rgba(255,209,102,.12);
+  padding:2px 6px;border-radius:5px;text-transform:uppercase;
+  border:1px solid rgba(255,209,102,.3);margin-left:4px;vertical-align:middle}
+.top .nav{display:flex;gap:14px;align-items:center}
+.icon-btn{background:none;border:none;color:var(--muted);font-size:15px;
+  cursor:pointer;padding:0;opacity:.7}
+.icon-btn:hover{opacity:1;color:var(--text)}
+.hub-link{color:var(--muted);text-decoration:none}
+.hub-link:hover{color:var(--accent)}
+
+.hero{text-align:center;margin-bottom:20px}
+.score{font-size:46px;font-weight:600;letter-spacing:-1.5px;
+  line-height:1;margin-bottom:6px}
+.stats{color:var(--muted);font-size:12px;letter-spacing:.1px}
+.stats .sep{margin:0 8px;opacity:.3}
+.stats .gold{color:var(--gold);opacity:.85}
+
+.clicker-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:16px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s ease;
+  position:relative;
+  overflow:hidden;
+}
+.clicker-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+}
+.big-btn{
+  position:relative;
+  z-index:0;
+  width:210px;height:210px;border-radius:50%;
+  font-size:26px;font-weight:700;letter-spacing:.5px;
+  color:var(--text);border:2px solid var(--line);
+  background:transparent;cursor:pointer;pointer-events:none;
+  transition:transform .08s ease,background .15s ease;
+}
+.clicker-card:active .big-btn{transform:scale(.95);background:rgba(255,255,255,.04)}
+
+.level{margin-bottom:20px}
+.level-head{display:flex;justify-content:space-between;font-size:11px;
+  color:var(--muted);margin-bottom:6px;letter-spacing:.2px}
+.level-head b{color:var(--text);font-weight:500}
+.bar{height:4px;background:var(--line);border-radius:999px;overflow:hidden}
+.bar-fill{height:100%;width:0%;background:var(--accent);
+  border-radius:999px;transition:width .25s}
+
+.daily{display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border:1px solid var(--line);
+  border-radius:var(--radius);margin-bottom:20px;
+  font-size:12px;color:var(--muted)}
+.daily .ico{font-size:16px;opacity:.8}
+.daily .txt{flex:1;min-width:0}
+.daily .txt b{color:var(--text);font-weight:500;display:block;margin-bottom:2px;font-size:13px}
+.daily .txt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.daily-btn{background:transparent;color:var(--accent);border:1px solid var(--accent);
+  padding:6px 12px;border-radius:6px;font-weight:500;font-size:12px;
+  cursor:pointer;white-space:nowrap}
+.daily-btn:hover:not(:disabled){background:rgba(0,173,181,.08)}
+.daily-btn:disabled{border-color:var(--line);color:var(--muted);cursor:not-allowed}
+
+.tabs{display:flex;gap:22px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.tab{padding:8px 0;font-size:13px;font-weight:500;color:var(--muted);
+  cursor:pointer;border-bottom:1px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+
+.shop-head{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;gap:8px}
+.shop-head h3{margin:0;font-size:11px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.modes{display:flex;gap:4px}
+.mode{padding:3px 8px;font-size:11px;font-weight:500;color:var(--muted);
+  cursor:pointer;border-radius:5px;background:transparent;border:none}
+.mode:hover{color:var(--text)}
+.mode.active{color:var(--accent);background:rgba(0,173,181,.1)}
+
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:28px 1fr auto;gap:14px;
+  align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.item.locked{opacity:.4}
+.icon{width:28px;height:28px;display:grid;place-items:center;font-size:16px;opacity:.85}
+.title{font-weight:500;font-size:13px;line-height:1.3}
+.sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sub b{color:var(--text);font-weight:500}
+
+.buy{background:transparent;color:var(--muted);border:1px solid var(--line);
+  padding:6px 11px;border-radius:6px;font-weight:500;font-size:12px;
+  cursor:pointer;min-width:70px;text-align:center;line-height:1.25;
+  transition:border-color .15s,color .15s}
+.buy:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.buy:disabled{cursor:not-allowed;opacity:.5}
+.buy.owned-btn{border-color:transparent;color:var(--muted);opacity:.6;cursor:default}
+
+.floater{position:fixed;pointer-events:none;font-weight:500;
+  color:var(--text);font-size:14px;opacity:.9;
+  animation:float .8s ease-out forwards;z-index:99}
+@keyframes float{to{transform:translateY(-40px);opacity:0}}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:none;justify-content:center;align-items:center;padding:20px;z-index:200}
+.overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:20px;width:100%;max-width:320px}
+.modal h3{margin:0 0 4px;font-size:15px;font-weight:600}
+.modal .hint{color:var(--muted);font-size:12px;margin-bottom:16px}
+.themes{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:16px}
+.theme-chip{border:1px solid var(--line);border-radius:8px;padding:10px;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:500;color:var(--muted);
+  background:transparent;transition:border-color .15s,color .15s}
+.theme-chip:hover{border-color:#2e3540;color:var(--text)}
+.theme-chip.active{border-color:var(--accent);color:var(--text)}
+.swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.close-x{background:transparent;color:var(--muted);border:1px solid var(--line);
+  padding:9px;border-radius:8px;width:100%;font-weight:500;font-size:13px;
+  cursor:pointer}
+.close-x:hover{border-color:#2e3540;color:var(--text)}
+
+.offline-toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#1e2430;
+  border:1px solid var(--accent);
+  border-radius:12px;
+  padding:12px 20px;
+  font-size:13px;
+  color:var(--text);
+  box-shadow:0 12px 40px rgba(0,0,0,.6);
+  z-index:99999;
+  animation:slideUp .35s ease-out;
+  max-width:calc(100% - 32px);
+  text-align:center;
+  pointer-events:none;
+}
+.offline-toast b{color:var(--accent2);font-weight:700}
+@keyframes slideUp{
+  from{transform:translate(-50%,20px);opacity:0}
+  to{transform:translate(-50%,0);opacity:1}
+}
+.update-note{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 16px;
+  margin-bottom:16px;
+  border-radius:12px;
+  background:rgba(0,173,181,.08);
+  border:1px solid rgba(0,173,181,.25);
+  color:var(--text);
+  font-size:13px;
+  font-weight:500;
+}
+.update-note .un-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 10px var(--accent2);
+  animation:unPulse 1.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes unPulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(1.3)}
+}
+</style></head><body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="who">Игрок: <b id="uname">—</b> <span class="beta">beta</span></div>
+    <div class="nav">
+      <button class="icon-btn" id="gear" title="Настройки">⚙</button>
+      <a class="hub-link" href="/" title="На главную">🏠</a>
+      <a class="hub-link" id="back-hub" href="/hub">← DownGames</a>
+    </div>
+  </div>
+
+    <div class="update-note">
+    <span class="un-dot"></span>
+    Скоро обновление
+  </div>
+
+  <div class="hero">
+    <div class="score" id="s">0</div>
+    <div class="stats">
+      <span>В сек: <b id="c" style="color:var(--text);font-weight:500">0.0</b></span>
+      <span class="sep">·</span>
+      <span class="gold" id="m">+0%</span>
+    </div>
+  </div>
+
+  <div class="clicker-card" id="btn">
+    <button class="big-btn">КЛИК</button>
+  </div>
+
+  <div class="level">
+    <div class="level-head">
+      <span>Уровень <b id="l">1</b></span>
+      <span id="ltxt">0 / 100</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="bar"></div></div>
+  </div>
+
+  <div class="daily">
+    <span class="ico">🎁</span>
+    <div class="txt">
+      <b>Награда дня</b>
+      <span id="daily-info">Загрузка...</span>
+    </div>
+    <button class="daily-btn" id="daily-btn">Забрать</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="gen">Улучшения</div>
+    <div class="tab" data-tab="col">Коллекция</div>
+  </div>
+
+  <div class="shop-head">
+    <h3 id="list-title">Улучшения</h3>
+    <div class="modes" id="modes">
+      <div class="mode active" data-m="1">×1</div>
+      <div class="mode" data-m="max">Max</div>
+    </div>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Настройки</h3>
+    <div class="hint">Тема оформления</div>
+    <div class="themes" id="themes"></div>
+    <button class="close-x" id="close-settings">Закрыть</button>
+  </div>
+</div>
+
+<script>
+const SHOP = /*__SHOP__*/;
+const COLLECTION = /*__COLLECTION__*/;
+const THEMES = /*__THEMES__*/;
+const STATE = /*__STATE__*/;
+
+let score = STATE.score, power = STATE.power, cps = STATE.cps;
+let lvl = STATE.lvl, next = STATE.next;
+let totalEarned = STATE.total_earned || STATE.score;
+let counts = Object.assign({}, STATE.counts);
+let ownedMap = Object.assign({}, STATE.owned);
+let clickMult = STATE.clickMult || 0;
+let cpsMult = STATE.cpsMult || 0;
+let themeId = STATE.theme || 'midnight';
+let buyMode = 1, tab = 'gen';
+let daily = STATE.daily || { can: false, seconds_left: 0, streak: 0, bonus: 0 };
+
+const MAX_BUY = 10000000;
+const $ = id => document.getElementById(id);
+$('uname').textContent = STATE.name;
+$('back-hub').href = '/hub';
+
+const fmt = n => {
+  n = Math.floor(n);
+  const u = [[1e33,'Dc'],[1e30,'No'],[1e27,'Oc'],[1e24,'Sp'],[1e21,'Sx'],
+             [1e18,'Qi'],[1e15,'Q'],[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];
+  for (let i=0;i<u.length;i++) if (n >= u[i][0]) return (n/u[i][0]).toFixed(2)+u[i][1];
+  return String(n);
+};
+function fmtTime(sec){
+  sec = Math.floor(sec);
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  if (h>0) return h+'ч '+m+'м';
+  if (m>0) return m+'м '+s+'с';
+  return s+'с';
+}
+function priceAfter(base, mult, ownedQty, qty){
+  if (qty<=0) return 0;
+  const p0 = base*Math.pow(mult, ownedQty);
+  if (Math.abs(mult-1)<1e-9) return Math.floor(p0)*qty;
+  return Math.floor(p0*(Math.pow(mult,qty)-1)/(mult-1));
+}
+function maxAffordable(base, mult, ownedQty){
+  const p0 = base*Math.pow(mult, ownedQty);
+  if (score < Math.floor(p0)) return {qty:0,total:0};
+  let qty;
+  if (Math.abs(mult-1)<1e-9) qty = Math.floor(score/p0);
+  else {
+    const r = 1 + (score*(mult-1))/p0;
+    if (r<=0) return {qty:0,total:0};
+    qty = Math.floor(Math.log(r)/Math.log(mult));
+  }
+  if (qty<0) qty=0;
+  if (qty>MAX_BUY) qty=MAX_BUY;
+  while (qty>0 && priceAfter(base,mult,ownedQty,qty)>score) qty--;
+  while (qty<MAX_BUY && priceAfter(base,mult,ownedQty,qty+1)<=score) qty++;
+  return {qty:qty, total: priceAfter(base,mult,ownedQty,qty)};
+}
+function applyTheme(t){
+  const r = document.documentElement.style;
+  r.setProperty('--accent', t.accent);
+  if (t.card) r.setProperty('--card', t.card);
+  if (t.bg2) r.setProperty('--bg', t.bg2);
+  if (t.text) r.setProperty('--text', t.text);
+  if (t.muted) r.setProperty('--muted', t.muted);
+  document.body.className = document.body.className.split(' ')
+    .filter(c => c.indexOf('theme-')!==0).join(' ');
+  if (t.style) document.body.classList.add(t.style);
+}
+function checkLevelUp(){
+  while (totalEarned >= next){
+    lvl++;
+    power += 1;
+    next = Math.floor(next * 1.5);
+  }
+}
+function renderStats(){
+  $('s').textContent = fmt(score);
+  $('c').textContent = cps.toFixed(1);
+  $('m').textContent = '+' + Math.round(clickMult*100) + '% / +' + Math.round(cpsMult*100) + '%';
+  $('l').textContent = lvl;
+  $('ltxt').textContent = fmt(totalEarned) + ' / ' + fmt(next);
+  const pct = Math.max(0, Math.min(100, (totalEarned / next) * 100));
+  $('bar').style.width = pct + '%';
+}
+function renderTabs(){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  $('list-title').textContent = tab === 'gen' ? 'Улучшения' : 'Коллекция';
+  $('modes').style.display = tab === 'gen' ? 'flex' : 'none';
+}
+function renderGen(){
+  const box = $('list');
+  let html = '';
+  SHOP.forEach(item => {
+    const qty = counts[item.id] || 0;
+    const price = priceAfter(item.base, item.mult, qty, 1);
+    const can = score >= price;
+    const cls = 'item' + (qty === 0 && !can ? ' locked' : '');
+    html +=
+      '<div class="' + cls + '">' +
+        '<div class="icon">' + item.icon + '</div>' +
+        '<div><div class="title">' + item.name + '</div>' +
+        '<div class="sub">' + item.desc + ' · ' + qty + '</div></div>' +
+        '<button class="buy" data-id="' + item.id + '"' + (can ? '' : ' disabled') + '>' +
+          fmt(price) + '</button>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+function renderCol(){
+  const box = $('list');
+  let html = '';
+  COLLECTION.forEach(item => {
+    const isOwned = !!ownedMap[item.id];
+    const can = score >= item.base && !isOwned;
+    const cls = 'item' + (isOwned ? ' owned' : '') + (!isOwned && !can ? ' locked' : '');
+    let btn;
+    if (isOwned){
+      btn = '<button class="buy owned-btn" disabled>—</button>';
+    } else {
+      btn = '<button class="buy" data-id="' + item.id + '"' +
+        (can ? '' : ' disabled') + '>' + fmt(item.base) + '</button>';
+    }
+    html +=
+      '<div class="' + cls + '">' +
+        '<div class="icon">' + item.icon + '</div>' +
+        '<div><div class="title">' + item.name + '</div>' +
+        '<div class="sub">' + item.desc + '</div></div>' + btn +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+function renderList(){ if (tab === 'gen') renderGen(); else renderCol(); }
+
+function updateGenRow(id){
+  const item = SHOP.find(i => i.id === id); if (!item) return;
+  const btn = $('list').querySelector('.buy[data-id="' + id + '"]');
+  if (!btn) return;
+  const qty = counts[id] || 0;
+  const price = priceAfter(item.base, item.mult, qty, 1);
+  const can = score >= price;
+  btn.disabled = !can;
+  btn.textContent = fmt(price);
+  const row = btn.closest('.item');
+  if (row){
+    const sub = row.querySelector('.sub');
+    if (sub) sub.textContent = item.desc + ' · ' + qty;
+    row.classList.toggle('locked', qty === 0 && !can);
+  }
+}
+function updateColRow(id){
+  const item = COLLECTION.find(i => i.id === id); if (!item) return;
+  const btn = $('list').querySelector('.buy[data-id="' + id + '"]');
+  if (!btn) return;
+  const row = btn.closest('.item');
+  if (!row) return;
+  row.classList.add('owned');
+  row.classList.remove('locked');
+  btn.disabled = true;
+  btn.classList.add('owned-btn');
+  btn.textContent = '—';
+}
+function refreshRows(){
+  if (tab === 'gen'){
+    SHOP.forEach(item => updateGenRow(item.id));
+  } else {
+    COLLECTION.forEach(item => {
+      if (ownedMap[item.id]) return;
+      const btn = $('list').querySelector('.buy[data-id="' + item.id + '"]');
+      if (!btn) return;
+      const can = score >= item.base;
+      btn.disabled = !can;
+      const row = btn.closest('.item');
+      if (row) row.classList.toggle('locked', !can);
+    });
+  }
+}
+
+$('list').addEventListener('click', function(e){
+  const btn = e.target.closest('.buy[data-id]');
+  if (!btn || btn.disabled) return;
+  const id = btn.dataset.id;
+  if (tab === 'gen') buyGen(id); else buyCol(id);
+});
+
+function buyGen(id){
+  const item = SHOP.find(i => i.id === id); if (!item) return;
+  const qtyOwned = counts[id] || 0;
+  let qty, total;
+  if (buyMode === 'max'){
+    const r = maxAffordable(item.base, item.mult, qtyOwned);
+    qty = r.qty; total = r.total;
+  } else {
+    qty = buyMode;
+    total = priceAfter(item.base, item.mult, qtyOwned, qty);
+  }
+  if (qty === 0 || total > score) return;
+  score -= total;
+  counts[id] = qtyOwned + qty;
+  cps += item.cps * qty * (1 + cpsMult);
+  renderStats(); updateGenRow(id); save();
+}
+
+function buyCol(id){
+  const item = COLLECTION.find(i => i.id === id);
+  if (!item || ownedMap[id] || score < item.base) return;
+  score -= item.base;
+  ownedMap[id] = 1;
+  clickMult += item.bonus;
+  cpsMult += item.cps_bonus || 0;
+  cps *= (1 + (item.cps_bonus || 0));
+  renderStats(); updateColRow(id); save();
+}
+
+function clickValue(){ return Math.max(1, Math.floor(power * (1 + clickMult))); }
+
+const clickerBtn = $('btn');
+
+function handleTap(x, y){
+  const gain = clickValue();
+  score += gain;
+  totalEarned += gain;
+  checkLevelUp();
+  spawnFloat('+' + fmt(gain), x, y - 40);
+  renderStats(); refreshRows();
+}
+
+clickerBtn.addEventListener('pointerdown', function(e){
+  e.preventDefault();
+  handleTap(e.clientX, e.clientY);
+}, {passive:false});
+
+clickerBtn.addEventListener('touchstart', function(e){
+  e.preventDefault();
+}, {passive:false});
+
+clickerBtn.addEventListener('contextmenu', function(e){
+  e.preventDefault();
+});
+
+function spawnFloat(text, x, y){
+  const f = document.createElement('div');
+  f.className = 'floater'; f.textContent = text;
+  f.style.left = x + 'px'; f.style.top = y + 'px';
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 800);
+}
+
+$('tabs').addEventListener('click', function(e){
+  const t = e.target.closest('.tab'); if (!t) return;
+  if (t.dataset.tab === tab) return;
+  tab = t.dataset.tab; renderTabs(); renderList();
+});
+
+$('modes').addEventListener('click', function(e){
+  const m = e.target.closest('.mode'); if (!m) return;
+  document.querySelectorAll('.mode').forEach(x => x.classList.remove('active'));
+  m.classList.add('active');
+  buyMode = (m.dataset.m === 'max') ? 'max' : parseInt(m.dataset.m);
+});
+
+function openSettings(){
+  const box = $('themes'); box.innerHTML = '';
+  THEMES.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'theme-chip' + (t.id === themeId ? ' active' : '');
+    el.innerHTML = '<div class="swatch" style="background:' + t.accent + '"></div>' + t.name;
+    el.addEventListener('click', function(){
+      themeId = t.id; applyTheme(t);
+      box.querySelectorAll('.theme-chip').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      save();
+    });
+    box.appendChild(el);
+  });
+  $('overlay').classList.add('open');
+}
+$('gear').addEventListener('click', openSettings);
+$('close-settings').addEventListener('click', () => $('overlay').classList.remove('open'));
+$('overlay').addEventListener('click', e => {
+  if (e.target === $('overlay')) $('overlay').classList.remove('open');
+});
+
+function renderDaily(){
+  const btn = $('daily-btn'), info = $('daily-info');
+  if (!btn || !info) return;
+  if (daily.can){
+    btn.disabled = false;
+    btn.textContent = '+' + fmt(daily.bonus);
+    info.textContent = 'Серия: ' + daily.streak + ' дн.';
+  } else {
+    btn.disabled = true;
+    btn.textContent = fmtTime(daily.seconds_left);
+    info.textContent = 'Серия: ' + daily.streak + ' дн.';
+  }
+}
+
+$('daily-btn').addEventListener('click', function(){
+  const body = new URLSearchParams({ name: STATE.name });
+  fetch('/daily', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body})
+    .then(r => r.json()).then(d => {
+      if (d.ok){
+        score = d.score;
+        totalEarned = d.total_earned;
+        daily.can = d.can; daily.seconds_left = d.seconds_left;
+        daily.streak = d.streak; daily.bonus = d.next_bonus || daily.bonus;
+        checkLevelUp();
+        spawnFloat('+' + fmt(d.bonus), window.innerWidth/2, 180);
+      } else {
+        daily.can = d.can; daily.seconds_left = d.seconds_left;
+        daily.streak = d.streak; daily.bonus = d.next_bonus || 0;
+      }
+      renderStats(); renderDaily(); refreshRows();
+    });
+});
+
+setInterval(function(){
+  if (!daily.can && daily.seconds_left > 0){
+    daily.seconds_left -= 1;
+    if (daily.seconds_left <= 0){
+      const body = new URLSearchParams({ name: STATE.name });
+      fetch('/daily', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body})
+        .then(r => r.json()).then(d => {
+          daily.can = d.can; daily.seconds_left = d.seconds_left;
+          daily.streak = d.streak; daily.bonus = d.next_bonus || daily.bonus;
+          renderDaily();
+        });
+    } else renderDaily();
+  }
+}, 1000);
+
+function save(){
+  const payload = {score, power, cps, lvl, next, clickMult, cpsMult,
+                   total_earned: totalEarned, theme: themeId};
+  SHOP.forEach(i => {
+    payload['c_'+i.id] = priceAfter(i.base, i.mult, counts[i.id]||0, 1);
+    payload['n_'+i.id] = counts[i.id]||0;
+  });
+  COLLECTION.forEach(i => { payload['o_'+i.id] = ownedMap[i.id] ? 1 : 0; });
+  const body = new URLSearchParams({ name: STATE.name, payload: JSON.stringify(payload) });
+  fetch('/save', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).catch(()=>{});
+}
+
+let tickCounter = 0;
+setInterval(function(){
+  if (cps > 0){
+    const gain = cps / 30;
+    score += gain;
+    totalEarned += gain;
+    checkLevelUp();
+    renderStats(); refreshRows();
+    tickCounter++;
+    if (tickCounter >= 150){ save(); tickCounter = 0; }
+  }
+}, 1000 / 30);
+
+if (STATE.offline_gain && STATE.offline_gain > 0){
+  const t = document.createElement('div');
+  t.className = 'offline-toast';
+  t.innerHTML = 'Пока тебя не было: <b>+' + fmt(STATE.offline_gain) + '</b>';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
+
+applyTheme(THEMES.find(x => x.id === themeId) || THEMES[0]);
+renderTabs(); renderStats(); renderDaily(); renderList();
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;max-width:520px;width:calc(100% - 32px);padding:16px 20px;border-radius:14px;background:rgba(20,25,35,.92);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.1);color:#eef2f7;font-size:13px;line-height:1.5;box-shadow:0 12px 40px rgba(0,0,0,.4);display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+  <div style="flex:1;min-width:200px">🍪 Мы используем куки для работы сессии — чтобы ты оставался залогинен.</div>
+  <button id="cookie-ok" style="background:linear-gradient(135deg,#5ce1e6,#7c9cff);color:#02060a;border:none;padding:9px 18px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer">Ок</button>
+</div>
+<script>
+(function(){
+  var banner = document.getElementById('cookie-banner');
+  var btn = document.getElementById('cookie-ok');
+  if (!banner || !btn) return;
+
+  var ok = false;
+  try { ok = localStorage.getItem('cookies_ok') === '1'; } catch(e){}
+
+  if (ok){
+    banner.remove();
+    return;
+  }
+
+  banner.style.display = 'flex';
+
+  btn.addEventListener('click', function(){
+    try { localStorage.setItem('cookies_ok', '1'); } catch(e){}
+    banner.remove();
+  });
+})();
+</script>
+</body></html>

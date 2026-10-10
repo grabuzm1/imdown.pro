@@ -82,41 +82,15 @@ body{
 }
 .nav a:hover, .nav button:hover{color:var(--text)}
 
-.nav .btn-home{
+/* Кнопка с рамкой — для "DownGames" */
+.nav .btn-frame{
   color:var(--accent);
   border:1px solid var(--card-border);
   padding:6px 12px;border-radius:8px;
   font-size:12px;font-weight:700;letter-spacing:.2px;
   transition:all .15s ease;
 }
-.nav .btn-home:hover{background:var(--card-bg);border-color:var(--accent)}
-
-.quick-links{
-  display:flex;
-  gap:8px;
-  margin-bottom:14px;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-.ql-item{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:7px 14px;
-  border-radius:10px;
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  color:var(--muted);
-  text-decoration:none;
-  font-size:12px;
-  font-weight:600;
-  transition:all .15s ease;
-  letter-spacing:.2px;
-}
-.ql-item:hover{
-  color:var(--accent);
-  border-color:var(--accent);
-}
+.nav .btn-frame:hover{background:var(--card-bg);border-color:var(--accent);color:var(--accent)}
 
 .clicker-zone{
   position:relative;
@@ -416,7 +390,7 @@ body{
   .item{grid-template-columns:40px 1fr auto;gap:12px}
   .icon{width:40px;height:40px;font-size:17px}
   .nav{gap:6px}
-  .nav .btn-home{padding:5px 10px;font-size:11px}
+  .nav .btn-frame{padding:5px 10px;font-size:11px}
 }
 </style></head><body class="theme-sunset">
 
@@ -426,13 +400,9 @@ body{
     <a class="brand" href="/"><div class="dot"></div>imdown.pro</a>
     <div class="nav">
       <button id="gear" title="Настройки">⚙</button>
-      <a href="/" class="btn-home">На главную</a>
-      <a href="/hub">← DownGames</a>
+      <a href="/updates">Что нового</a>
+      <a href="/hub" class="btn-frame">← DownGames</a>
     </div>
-  </div>
-
-  <div class="quick-links">
-    <a href="/updates" class="ql-item">🆕 Что нового</a>
   </div>
 
   <div class="clicker-zone" id="btn">

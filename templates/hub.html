@@ -1,155 +1,302 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>DownGames</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DownGames · скоро</title>
 <style>
-:root{
-  --bg:#0f1115;--bg1:#151a22;--card:#171b22;
-  --accent:#00ADB5;--accent2:#00e0ea;
-  --text:#e8ecf1;--muted:#8b93a1;
-  --ok:#3ddc97;--gold:#ffd166;--bad:#ff5c5c;
-  --line:#222731;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
 body{
-  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-  background:var(--bg);
-  color:var(--text);min-height:100vh;padding:28px 18px 60px;
-  display:flex;justify-content:center;align-items:flex-start;
-  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+  font-family:'PT Serif','Georgia',serif;
+  background:#efe3c2;
+  color:#1a1a1a;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+  position:relative;
 }
-.wrap{width:100%;max-width:760px}
 
-.top-bar{display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:36px;font-size:13px;color:var(--muted)}
-.user b{color:var(--text);font-weight:500}
-.logout{color:var(--muted);text-decoration:none}
-.logout:hover{color:var(--bad)}
+/* Текстура бумаги */
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.5;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(180,140,80,.15) 0%, transparent 35%),
+    radial-gradient(circle at 85% 75%, rgba(140,100,40,.12) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(160,120,60,.06) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, rgba(90,60,20,.02) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, rgba(90,60,20,.02) 0 1px, transparent 1px 4px);
+}
 
-.header{margin-bottom:24px}
-.logo{display:flex;align-items:center;gap:10px;
-  font-size:24px;font-weight:600;letter-spacing:-.2px;
-  margin-bottom:6px;flex-wrap:wrap}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
-.beta{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.2px;
-  color:var(--muted);background:transparent;
-  padding:2px 6px;border-radius:4px;text-transform:uppercase;
-  border:1px solid var(--line)}
-.subtitle{color:var(--muted);font-size:13px}
+/* Верхняя газетная плашка */
+.newspaper-head{
+  position:relative;
+  z-index:2;
+  padding:20px 40px;
+  border-bottom:3px double #1a1a1a;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:'PT Serif',serif;
+}
+.newspaper-brand{
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:-.5px;
+  color:#1a1a1a;
+  text-decoration:none;
+  font-style:italic;
+}
+.newspaper-date{
+  font-size:12px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:#5a4a2c;
+  font-weight:600;
+}
 
-.update-note{
+/* Основной контент */
+.main{
+  position:relative;
+  z-index:2;
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:60px 40px;
+}
+.content{
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  gap:60px;
+  align-items:center;
+  max-width:1100px;
+  width:100%;
+}
+
+/* Плакат — как вырезка из газеты */
+.poster-wrap{
+  position:relative;
+  padding:14px 14px 40px;
+  background:#fff;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,.08),
+    0 8px 24px rgba(80,60,20,.25),
+    0 20px 60px rgba(80,60,20,.15);
+  transform:rotate(-2deg);
+  transition:transform .5s cubic-bezier(.2,.7,.3,1);
+  border:1px solid rgba(26,26,26,.1);
+}
+.poster-wrap:hover{transform:rotate(0deg) scale(1.02)}
+.poster-wrap img{
+  display:block;
+  width:100%;
+  height:auto;
+  filter:saturate(1.02) contrast(1.02);
+}
+/* Подпись под плакатом как от руки */
+.poster-wrap::after{
+  content:"№ 42 · IMDOWN";
+  position:absolute;
+  bottom:12px;
+  left:16px;
+  font-size:11px;
+  letter-spacing:3px;
+  color:#8b6a2e;
+  font-weight:700;
+  text-transform:uppercase;
+}
+
+/* Текст справа */
+.info{max-width:460px}
+
+.kicker{
+  font-family:'PT Serif',serif;
+  font-size:12px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:#8b1f1c;
+  font-weight:700;
+  margin-bottom:18px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.kicker::before,
+.kicker::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:rgba(139,31,28,.35);
+}
+
+h1{
+  font-family:'Playfair Display','PT Serif',serif;
+  font-size:clamp(38px, 5vw, 56px);
+  font-weight:900;
+  letter-spacing:-2px;
+  line-height:1;
+  color:#1a1a1a;
+  margin-bottom:22px;
+}
+h1 em{
+  font-style:italic;
+  color:#c9302c;
+}
+
+/* Разделитель */
+.divider{
+  height:1px;
+  background:repeating-linear-gradient(90deg, #1a1a1a 0 8px, transparent 8px 12px);
+  margin:24px 0;
+  opacity:.4;
+}
+
+.desc{
+  font-family:'PT Serif',serif;
+  font-size:16px;
+  line-height:1.7;
+  color:#3a2a10;
+  margin-bottom:32px;
+}
+.desc b{color:#1a1a1a;font-weight:700}
+.desc .red{color:#c9302c;font-weight:700;font-style:italic}
+
+/* Кнопки */
+.actions{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.btn{
   display:inline-flex;
   align-items:center;
   gap:8px;
-  padding:8px 16px;
-  margin-bottom:20px;
-  border-radius:999px;
-  background:rgba(0,173,181,.08);
-  border:1px solid rgba(0,173,181,.25);
-  color:rgba(232,236,241,.85);
-  font-size:13px;
-  font-weight:500;
+  padding:14px 26px;
+  font-family:'PT Serif',serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.5px;
+  text-decoration:none;
+  transition:all .15s ease;
+  cursor:pointer;
+  border:none;
+  text-transform:uppercase;
 }
-.update-note .un-dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 10px var(--accent2);
-  animation:unPulse 1.4s ease-in-out infinite;
+.btn-primary{
+  background:#c9302c;
+  color:#efe3c2;
+  box-shadow:
+    4px 4px 0 #1a1a1a,
+    0 0 0 2px #c9302c inset;
 }
-@keyframes unPulse{
-  0%,100%{opacity:1;transform:scale(1)}
-  50%{opacity:.4;transform:scale(1.3)}
+.btn-primary:hover{
+  background:#8b1f1c;
+  transform:translate(-2px,-2px);
+  box-shadow:
+    6px 6px 0 #1a1a1a,
+    0 0 0 2px #8b1f1c inset;
+}
+.btn-primary:active{
+  transform:translate(2px,2px);
+  box-shadow:
+    2px 2px 0 #1a1a1a,
+    0 0 0 2px #c9302c inset;
 }
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-
-.tile{
-  display:flex;flex-direction:column;justify-content:space-between;
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:10px;padding:18px;
-  min-height:150px;text-decoration:none;color:var(--text);
-  transition:border-color .15s ease,background .15s ease;
+.btn-ghost{
+  background:transparent;
+  color:#1a1a1a;
+  border:2px solid #1a1a1a;
 }
-.tile:hover{border-color:#2e3540;background:#1a1f27}
-.tile-icon{font-size:24px;line-height:1;margin-bottom:14px;opacity:.9}
-.tile-title{font-size:14px;font-weight:600;margin-bottom:4px;letter-spacing:-.1px}
-.tile-desc{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:14px}
-.tile-footer{display:flex;justify-content:space-between;align-items:center;
-  font-size:11px;color:var(--muted)}
-.badge{font-weight:600;font-size:11px;letter-spacing:.2px}
-.badge-ready{color:var(--ok)}
-.badge-soon{color:var(--muted);opacity:.7}
-.arrow{color:var(--accent2);font-size:12px;opacity:.8}
-.tile.disabled{cursor:not-allowed;opacity:.5}
-.tile.disabled:hover{border-color:var(--line);background:var(--card)}
-
-@media (max-width:520px){
-  .grid{grid-template-columns:1fr}
-  .tile{min-height:120px;padding:16px}
-  .logo{font-size:20px}
+.btn-ghost:hover{
+  background:#1a1a1a;
+  color:#efe3c2;
 }
-</style></head><body>
-<div class="wrap">
-  <div class="top-bar">
-    <div class="user">Игрок: <b>__NAME__</b></div>
-    <div style="display:flex;gap:18px;align-items:center">
-      <a class="logout" href="/">На главную</a>
-      <a class="logout" href="/logout">Выйти</a>
-    </div>
-  </div>
-  <div class="header">
-    <div class="logo"><div class="dot"></div>DownGames <span class="beta">beta</span></div>
-    <div class="subtitle">Выбери, во что хочешь сыграть</div>
-  </div>
 
-  <div class="update-note">
-    <span class="un-dot"></span>
-    Идет обновление Clicker Down, сервис может работать с ошибками.
-  </div>
+/* Футер как в газете */
+.footer{
+  position:relative;
+  z-index:2;
+  border-top:3px double #1a1a1a;
+  padding:20px 40px;
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  color:#5a4a2c;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.footer a{color:#5a4a2c;text-decoration:none;transition:color .2s}
+.footer a:hover{color:#c9302c}
 
-  <div class="grid" id="grid"></div>
+/* Мобильный */
+@media (max-width:860px){
+  .newspaper-head{padding:16px 20px;flex-direction:column;gap:6px;text-align:center}
+  .main{padding:40px 20px}
+  .content{grid-template-columns:1fr;gap:36px}
+  .poster-wrap{max-width:380px;margin:0 auto;transform:rotate(-1.5deg)}
+  .info{text-align:center;margin:0 auto}
+  .kicker{justify-content:center}
+  .kicker::before,.kicker::after{max-width:40px}
+  .actions{justify-content:center}
+  .footer{padding:16px 20px;flex-direction:column;gap:8px;text-align:center}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head><body>
+
+<div class="newspaper-head">
+  <a href="/" class="newspaper-brand">imdown.pro</a>
+  <div class="newspaper-date">Выпуск · 12 октября 2026</div>
 </div>
 
-<script>
-const NAME = "__NAME__";
+<div class="main">
+  <div class="content">
 
-const PROJECTS = [
-  { id: "clicker", icon: "⚡", title: "Clicker Down",
-    desc: "Кликер с магазином улучшений и коллекцией вилл, машин и яхт.",
-    status: "ready", url: "/game" },
-  { id: "p2", icon: "🎯", title: "Проект #2", desc: "coming soon.", status: "soon" },
-  { id: "p3", icon: "🧩", title: "Проект #3", desc: "coming soon.", status: "soon" },
-  { id: "p4", icon: "🚀", title: "Проект #4", desc: "coming soon.", status: "soon" },
-  { id: "p5", icon: "🎮", title: "Проект #5", desc: "coming soon.", status: "soon" },
-  { id: "p6", icon: "🕹️", title: "Проект #6", desc: "coming soon.", status: "soon" }
-];
+    <div class="poster-wrap">
+      <img src="/static/poster.png" alt="Плакат">
+    </div>
 
-const STATUS = {
-  ready: { label: "Доступно", cls: "badge-ready" },
-  soon:  { label: "Скоро",    cls: "badge-soon"  }
-};
+    <div class="info">
 
-const grid = document.getElementById('grid');
-PROJECTS.forEach(function(p){
-  const s = STATUS[p.status] || STATUS.soon;
-  const el = document.createElement(p.status === 'ready' ? 'a' : 'div');
-  el.className = 'tile' + (p.status === 'ready' ? '' : ' disabled');
-  if (p.status === 'ready') el.href = p.url;
-  el.innerHTML =
-    '<div>' +
-      '<div class="tile-icon">' + p.icon + '</div>' +
-      '<div class="tile-title">' + p.title + '</div>' +
-      '<div class="tile-desc">' + p.desc + '</div>' +
-    '</div>' +
-    '<div class="tile-footer">' +
-      '<span class="badge ' + s.cls + '">' + s.label + '</span>' +
-      (p.status === 'ready' ? '<span class="arrow">Играть →</span>' : '') +
-    '</div>';
-  grid.appendChild(el);
-});
-</script>
+      <div class="kicker">Обновление</div>
+
+      <h1>
+        Идёт работа.<br>
+        <em>Скоро вернёмся.</em>
+      </h1>
+
+      <div class="divider"></div>
+
+      <p class="desc">
+        Мы дорабатываем платформу <b>DownGames</b> — новое оформление, стабильность. Заходите в
+        <span class="red">Clicker Down</span>, он уже работает.
+      </p>
+
+      <div class="actions">
+        <a href="/game" class="btn btn-primary">
+          🎮 Clicker Down
+        </a>
+        <a href="/updates" class="btn btn-ghost">
+          Обновления
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  <div>© imdown.pro · 2026</div>
+  <div><a href="/">На главную</a></div>
+</div>
+
 </body></html>

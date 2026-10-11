@@ -2,16 +2,21 @@ import json, os, re, time, hashlib, secrets, threading
 from pathlib import Path
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles          # ← добавь этот импорт
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import uvicorn
 
 app = FastAPI()
-BASE = Path(__file__).parent
+BASE = Path(__file__).parent          # ← BASE определяется ЗДЕСЬ
 DB = BASE / "users.json"
 TPL = BASE / "templates"
+STATIC = BASE / "static"              # ← добавь эту строку
 _lock = threading.Lock()
 DAILY_COOLDOWN = 24 * 60 * 60
 OFFLINE_CAP = 8 * 60 * 60
+
+# ← ВОТ ЗДЕСЬ app.mount (после BASE, DB, TPL, STATIC)
+app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 REBIRTH_BASE = 1e15        # порог первого перерождения
 REBIRTH_STEP = 5           # каждый следующий порог × 5

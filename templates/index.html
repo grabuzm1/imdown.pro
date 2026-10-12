@@ -87,7 +87,7 @@ body::before{
   padding:24px 24px 100px;
 }
 
-/* Верхняя панель */
+/* ============ ШАПКА ============ */
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -144,9 +144,7 @@ body::before{
 }
 .user-chip:hover{color:var(--text)}
 
-/* ============================================
-   МОДАЛКА АККАУНТА
-   ============================================ */
+/* ============ МОДАЛКА АККАУНТА ============ */
 .acc-overlay{
   position:fixed;
   inset:0;
@@ -267,7 +265,7 @@ body::before{
 .swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
 .swatch.sunset{background:linear-gradient(135deg,#ff7a4a,#ff4a8b)}
 
-/* Hero */
+/* ============ HERO ============ */
 .hero{
   text-align:center;
   padding:20px 0 100px;
@@ -278,7 +276,8 @@ body::before{
   font-size:clamp(44px, 8vw, 84px);
   font-weight:900;
   letter-spacing:-4px;
-  line-height:.95;
+  line-height:1.15;
+  padding:4px 0 10px;
   margin-bottom:24px;
   background:var(--title-grad);
   -webkit-background-clip:text;
@@ -300,6 +299,10 @@ body::before{
   line-height:1.6;
   max-width:600px;
   margin:0 auto 32px;
+}
+.hero p b{
+  color:var(--text);
+  font-weight:700;
 }
 .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
@@ -474,44 +477,6 @@ body::before{
   padding:9px 18px;border-radius:10px;
   font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;
 }
-
-.maint-note{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px 20px;
-  margin-bottom:32px;
-  border-radius:14px;
-  background:rgba(255,180,80,.08);
-  border:1px solid rgba(255,180,80,.28);
-  color:var(--text);
-  font-size:14px;
-  font-weight:500;
-  opacity:0;
-  animation:fadeUp .7s ease-out .1s forwards;
-}
-.maint-note .mn-dot{
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  background:#ffb450;
-  box-shadow:0 0 12px #ffb450;
-  animation:mnPulse 1.4s ease-in-out infinite;
-  flex-shrink:0;
-}
-@keyframes mnPulse{
-  0%,100%{opacity:1;transform:scale(1)}
-  50%{opacity:.4;transform:scale(1.35)}
-}
-
-@media (max-width:640px){
-  .maint-note{
-    font-size:13px;
-    padding:12px 16px;
-    margin-bottom:24px;
-  }
-}
-
 </style></head><body class="theme-sunset">
 
 <div class="wrap">
@@ -528,8 +493,10 @@ body::before{
   </div>
 
   <div class="hero">
-    <h1>Hello, world!</h1>
-    <p>Собираю здесь свои проекты и эксперименты.</p>
+    <h1>502 Bad Gateway</h1>
+    <p>
+      Ссылки <b>DownGames</b> и <b>Clicker Down</b> изменены.
+    </p>
     <div class="hero-actions">
       <a class="btn btn-ghost" href="/projects">Все проекты</a>
     </div>
@@ -554,11 +521,11 @@ body::before{
       </div>
     </a>
 
-        <div class="card disabled">
+    <div class="card disabled">
       <div>
         <div class="card-icon">🛠️</div>
         <div class="card-title">Новый проект <span class="badge-beta">dev</span></div>
-        <div class="card-desc">Уже в разработке. Бета до конца недели.</div>
+        <div class="card-desc">Уже в разработке. Релиз — до конца недели.</div>
       </div>
       <div class="card-foot"><span class="badge badge-soon">Скоро</span></div>
     </div>
@@ -597,7 +564,6 @@ body::before{
 
 </div>
 
-<!-- МОДАЛКА АККАУНТА -->
 <div class="acc-overlay" id="accOverlay">
   <div class="acc-modal">
     <div class="acc-header">

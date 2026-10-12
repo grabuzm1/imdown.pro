@@ -579,8 +579,8 @@ async def consent_deny(request: Request, service: str = Form(...)):
     return RedirectResponse("/", status_code=303)
 
 
-@app.get("/hub", response_class=HTMLResponse)
-async def hub(request: Request):
+@app.get("/downgames", response_class=HTMLResponse)
+async def downgames(request: Request):
     user, trusted = current_user(request)
     if not user:
         return RedirectResponse("/login?next=/games", status_code=303)
@@ -589,10 +589,10 @@ async def hub(request: Request):
         return RedirectResponse("/login?next=/games", status_code=303)
     if "downgames" not in trusted:
         return RedirectResponse("/consent?service=downgames", status_code=303)
-    return read_tpl("hub.html").replace("__NAME__", user)
+    return read_tpl("downgames.html").replace("__NAME__", user)
 
 
-@app.get("/game", response_class=HTMLResponse)
+@app.get("/clickerdown", response_class=HTMLResponse)
 async def game(request: Request):
     user, trusted = current_user(request)
     if not user:
@@ -637,7 +637,7 @@ async def game(request: Request):
         "daily": {"can": can_claim, "seconds_left": left,
                   "streak": streak, "bonus": bonus},
     }
-    html = read_tpl("game.html")
+    html = read_tpl("clickerdown.html")
     html = html.replace("/*__SHOP__*/",       json.dumps(SHOP, ensure_ascii=False))
     html = html.replace("/*__COLLECTION__*/", json.dumps(COLLECTION, ensure_ascii=False))
     html = html.replace("/*__THEMES__*/",     json.dumps(THEMES, ensure_ascii=False))

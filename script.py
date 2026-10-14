@@ -540,7 +540,7 @@ async def games_landing(request: Request):
         data = load()
         if user in data:
             if "downgames" in trusted:
-                return RedirectResponse("/hub", status_code=303)
+                return RedirectResponse("/downgames", status_code=303)
             return RedirectResponse("/consent?service=downgames", status_code=303)
     return read_tpl("games_landing.html")
 
@@ -554,7 +554,7 @@ async def consent_page(request: Request, service: str = "downgames"):
     if user not in data:
         return RedirectResponse("/login", status_code=303)
     if service in trusted:
-        return RedirectResponse("/hub", status_code=303)
+        return RedirectResponse("/downgames", status_code=303)
     html = read_tpl("consent.html")
     html = html.replace("__NAME__", user)
     html = html.replace("__SERVICE__", service)
@@ -568,7 +568,7 @@ async def consent_allow(request: Request, service: str = Form(...)):
         return RedirectResponse("/login", status_code=303)
     if service not in trusted:
         trusted.append(service)
-    resp = RedirectResponse("/hub", status_code=303)
+    resp = RedirectResponse("/downgames", status_code=303)
     resp.set_cookie(COOKIE_NAME, make_session(user, trusted),
                     max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
     return resp
@@ -593,10 +593,10 @@ async def downgames(request: Request):
 
 
 @app.get("/clickerdown", response_class=HTMLResponse)
-async def game(request: Request):
+async def clickerdown(request: Request):
     user, trusted = current_user(request)
     if not user:
-        return RedirectResponse("/login?next=/game", status_code=303)
+        return RedirectResponse("/login?next=/clickerdown", status_code=303)
     data = load()
     if user not in data:
         return RedirectResponse("/login", status_code=303)

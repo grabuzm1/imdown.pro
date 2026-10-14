@@ -82,15 +82,14 @@ body{
 }
 .nav a:hover, .nav button:hover{color:var(--text)}
 
-/* Кнопка с рамкой — для "DownGames" */
-.nav .btn-frame{
+.nav .btn-home{
   color:var(--accent);
   border:1px solid var(--card-border);
   padding:6px 12px;border-radius:8px;
   font-size:12px;font-weight:700;letter-spacing:.2px;
   transition:all .15s ease;
 }
-.nav .btn-frame:hover{background:var(--card-bg);border-color:var(--accent);color:var(--accent)}
+.nav .btn-home:hover{background:var(--card-bg);border-color:var(--accent)}
 
 .clicker-zone{
   position:relative;
@@ -390,7 +389,7 @@ body{
   .item{grid-template-columns:40px 1fr auto;gap:12px}
   .icon{width:40px;height:40px;font-size:17px}
   .nav{gap:6px}
-  .nav .btn-frame{padding:5px 10px;font-size:11px}
+  .nav .btn-home{padding:5px 10px;font-size:11px}
 }
 </style></head><body class="theme-sunset">
 
@@ -400,8 +399,8 @@ body{
     <a class="brand" href="/"><div class="dot"></div>imdown.pro</a>
     <div class="nav">
       <button id="gear" title="Настройки">⚙</button>
-      <a href="/updates">Что нового</a>
-      <a href="/downgames" class="btn-frame">← DownGames</a>
+      <a href="/" class="btn-home">На главную</a>
+      <a href="/downgames">← DownGames</a>
     </div>
   </div>
 
@@ -468,6 +467,11 @@ const STATE      = /*__STATE__*/;
 let score = STATE.score, power = STATE.power, cps = STATE.cps;
 let lvl = STATE.lvl, next = STATE.next;
 let totalEarned = STATE.total_earned || STATE.score;
+
+// Форсированный пересчёт power по новой формуле
+if (lvl > 1){
+  power = Math.floor(lvl * lvl * 1000);
+}
 let totalEarnedAll = STATE.total_earned_all || 0;
 let counts = Object.assign({}, STATE.counts);
 let ownedMap = Object.assign({}, STATE.owned);
@@ -527,7 +531,7 @@ function applyTheme(id){
 function checkLevelUp(){
   while (totalEarned >= next){
     lvl++;
-    power += 1;
+    power = Math.floor(lvl * lvl * 1000);
     next = Math.floor(next * 1.5);
   }
 }
@@ -822,7 +826,7 @@ function doRebirth(){
         rebirths = d.rebirths;
         rebirthBonus = d.rebirthBonus;
         rebirthThreshold = d.rebirthThreshold;
-        score = 0; power = 1; cps = 0; lvl = 1; next = 100;
+        score = 0; power = 1000; cps = 0; lvl = 1; next = 100;
         totalEarned = 0;
         counts = {}; SHOP.forEach(i => counts[i.id] = 0);
         ownedMap = {}; COLLECTION.forEach(i => ownedMap[i.id] = 0);
@@ -875,6 +879,9 @@ if (STATE.offline_gain && STATE.offline_gain > 0){
 }
 
 applyTheme(themeId);
-renderTabs(); renderStats(); renderDaily(); renderList();
+renderTabs();
+renderStats();
+renderDaily();
+setTimeout(function(){ renderList(); }, 0);
 </script>
 </body></html>

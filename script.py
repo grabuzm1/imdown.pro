@@ -158,7 +158,7 @@ def default_user(pw_hash):
     u = {
         "pass": pw_hash,
         "score": 0.0,
-        "power": 1.0,
+        "power": 1000.0,
         "cps": 0.0,
         "lvl": 1,
         "next": 100,
@@ -184,7 +184,7 @@ def default_user(pw_hash):
 def migrate(u):
     changed = False
     base_defaults = {
-        "score": 0.0, "power": 1.0, "cps": 0.0,
+        "score": 0.0, "power": 1000.0, "cps": 0.0,
         "lvl": 1, "next": 100, "total_earned": 0.0,
         "total_earned_all": 0.0, "best_score": 0.0, "rebirths": 0,
         "theme": "sunset",
@@ -540,7 +540,7 @@ async def games_landing(request: Request):
         data = load()
         if user in data:
             if "downgames" in trusted:
-                return RedirectResponse("/hub", status_code=303)
+                return RedirectResponse("/downgames", status_code=303)
             return RedirectResponse("/consent?service=downgames", status_code=303)
     return read_tpl("games_landing.html")
 
@@ -554,7 +554,7 @@ async def consent_page(request: Request, service: str = "downgames"):
     if user not in data:
         return RedirectResponse("/login", status_code=303)
     if service in trusted:
-        return RedirectResponse("/hub", status_code=303)
+        return RedirectResponse("/downgames", status_code=303)
     html = read_tpl("consent.html")
     html = html.replace("__NAME__", user)
     html = html.replace("__SERVICE__", service)
@@ -568,7 +568,7 @@ async def consent_allow(request: Request, service: str = Form(...)):
         return RedirectResponse("/login", status_code=303)
     if service not in trusted:
         trusted.append(service)
-    resp = RedirectResponse("/hub", status_code=303)
+    resp = RedirectResponse("/downgames", status_code=303)
     resp.set_cookie(COOKIE_NAME, make_session(user, trusted),
                     max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
     return resp
@@ -593,10 +593,10 @@ async def downgames(request: Request):
 
 
 @app.get("/clickerdown", response_class=HTMLResponse)
-async def game(request: Request):
+async def clickerdown(request: Request):
     user, trusted = current_user(request)
     if not user:
-        return RedirectResponse("/login?next=/game", status_code=303)
+        return RedirectResponse("/login?next=/clickerdown", status_code=303)
     data = load()
     if user not in data:
         return RedirectResponse("/login", status_code=303)
@@ -604,6 +604,9 @@ async def game(request: Request):
         return RedirectResponse("/consent?service=downgames", status_code=303)
 
     u = migrate(data[user])
+    # Пересчёт power по новой формуле (lvl² × 1000)
+    if u.get("lvl", 1) > 1:
+        u["power"] = float(u["lvl"] * u["lvl"] * 1000)
     off = offline_gain(u)
     if off > 0:
         u["score"] += off
@@ -667,7 +670,7 @@ async def do_rebirth(request: Request):
     # Сброс текущего забега
     u["rebirths"] = rb + 1
     u["score"] = 0.0
-    u["power"] = 1.0
+    u["power"] = 1000.0
     u["cps"] = 0.0
     u["lvl"] = 1
     u["next"] = 100

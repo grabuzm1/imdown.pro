@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>Аккаунт · Down ID</title>
 <style>
 :root{
@@ -187,6 +189,77 @@ body::before{
   background:rgba(255,107,122,.08);
   border:1px solid rgba(255,107,122,.25);
 }
+/* Бета-модалка */
+.beta-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  z-index:1000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.beta-overlay.open{
+  display:flex;
+  opacity:1;
+}
+.beta-modal{
+  width:100%;
+  max-width:360px;
+  background:#0f1420;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;
+  padding:28px 24px;
+  text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+  transform:scale(.95);
+  transition:transform .25s cubic-bezier(.2,.7,.3,1);
+}
+.beta-overlay.open .beta-modal{
+  transform:scale(1);
+}
+.beta-icon{
+  font-size:44px;
+  margin-bottom:14px;
+  line-height:1;
+}
+.beta-title{
+  font-size:20px;
+  font-weight:800;
+  color:#fff;
+  letter-spacing:-.3px;
+  margin-bottom:10px;
+}
+.beta-text{
+  font-size:14px;
+  color:#8a93a6;
+  line-height:1.55;
+  margin-bottom:22px;
+}
+.beta-modal .btn{
+  width:100%;
+  padding:12px 18px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:inherit;
+  transition:all .2s ease;
+}
+.beta-modal .btn-ghost{
+  background:rgba(255,255,255,.06);
+  color:#f4f7fc;
+  border:1px solid rgba(255,255,255,.1);
+}
+.beta-modal .btn-ghost:hover{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.2);
+}
+
 </style></head><body>
 <div class="wrap">
 
@@ -240,6 +313,27 @@ body::before{
   </form>
 
   <div class="card">
+    <h2><span class="ico">🧪</span>Бета-тестирование</h2>
+    <p style="font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:16px;">
+      Получи ранний доступ к новым функциям и проектам imdown.pro.
+    </p>
+    <button class="btn btn-primary" type="button" id="betaBtn">Принять участие</button>
+  </div>
+
+  <!-- Модалка -->
+  <div class="beta-overlay" id="betaOverlay">
+    <div class="beta-modal">
+      <div class="beta-icon">🚧</div>
+      <div class="beta-title">Пока недоступно</div>
+      <div class="beta-text">
+        Запись на бета-тестирование откроется позже.<br>
+        Следи за обновлениями.
+      </div>
+      <button type="button" class="btn btn-ghost" id="betaClose">Понятно</button>
+    </div>
+  </div>
+
+  <div class="card">
     <h2><span class="ico">↩️</span>Сессия</h2>
     <a href="/logout?next=/" style="text-decoration:none">
       <button class="btn btn-ghost" type="button">Выйти из аккаунта</button>
@@ -247,4 +341,34 @@ body::before{
   </div>
 
 </div>
+<script>
+(function(){
+  var btn = document.getElementById('betaBtn');
+  var overlay = document.getElementById('betaOverlay');
+  var close = document.getElementById('betaClose');
+
+  if (btn && overlay){
+    btn.addEventListener('click', function(){
+      overlay.classList.add('open');
+    });
+  }
+  if (close && overlay){
+    close.addEventListener('click', function(){
+      overlay.classList.remove('open');
+    });
+  }
+  if (overlay){
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay){
+        overlay.classList.remove('open');
+      }
+    });
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && overlay){
+      overlay.classList.remove('open');
+    }
+  });
+})();
+</script>
 </body></html>

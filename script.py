@@ -2,30 +2,35 @@ import json, os, re, time, hashlib, secrets, threading
 from pathlib import Path
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles          # ← добавь этот импорт
+from fastapi.staticfiles import StaticFiles
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import uvicorn
+import resend
 
 app = FastAPI()
-BASE = Path(__file__).parent          # ← BASE определяется ЗДЕСЬ
+BASE = Path(__file__).parent
 DB = BASE / "users.json"
 TPL = BASE / "templates"
-STATIC = BASE / "static"              # ← добавь эту строку
+STATIC = BASE / "static"
 _lock = threading.Lock()
 DAILY_COOLDOWN = 24 * 60 * 60
 OFFLINE_CAP = 8 * 60 * 60
 
-# ← ВОТ ЗДЕСЬ app.mount (после BASE, DB, TPL, STATIC)
-app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
-
-REBIRTH_BASE = 1e15        # порог первого перерождения
-REBIRTH_STEP = 5           # каждый следующий порог × 5
+REBIRTH_BASE = 1e15
+REBIRTH_STEP = 5
 
 SECRET_KEY = "imdown_super_secret_change_me_2026"
 SESSION_MAX_AGE = 60 * 60 * 24 * 30
 COOKIE_NAME = "imdown_session"
 
+# ============ EMAIL (Resend) ============
+RESEND_API_KEY = "re_P55JHmqH_HaJ37ubFYxCturT1j2V9FEDM"  # ← ВСТАВЬ СВОЙ КЛЮЧ
+RESEND_FROM = "imdown.pro <noreply@imdown.pro>"
+resend.api_key = RESEND_API_KEY
+
 _signer = URLSafeTimedSerializer(SECRET_KEY, salt="session")
+
+app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 
 def make_session(name: str, trusted=None) -> str:
@@ -92,8 +97,8 @@ def top_right_for(request):
         data = load()
         if user in data:
             return (
-                '<button type="button" class="user-chip" id="openAccount">'
-                + user + '</button>'
+                    '<button type="button" class="user-chip" id="openAccount">'
+                    + user + '</button>'
             )
     return '<a href="/login" class="nav-plain">Войти</a>'
 
@@ -103,60 +108,156 @@ THEMES = [
     {"id": "sunset", "name": "Sunset"},
 ]
 
-# ============ ЮНИТЫ ============
 SHOP = [
-    {"id": "clicker",  "icon": "👆", "name": "Палец-робот",       "desc": "+0.2/с",    "base": 15,                     "cps": 0.2,            "mult": 1.30},
-    {"id": "farm",     "icon": "🌾", "name": "Ферма",             "desc": "+1.5/с",    "base": 100,                    "cps": 1.5,            "mult": 1.35},
-    {"id": "rig",      "icon": "⛏️", "name": "Шахта",             "desc": "+8/с",      "base": 500,                    "cps": 8.0,            "mult": 1.40},
-    {"id": "factory",  "icon": "🏭", "name": "Завод",             "desc": "+50/с",     "base": 3000,                   "cps": 50.0,           "mult": 1.45},
-    {"id": "lab",      "icon": "🔬", "name": "Лаборатория",       "desc": "+300/с",    "base": 15000,                  "cps": 300.0,          "mult": 1.50},
-    {"id": "reactor",  "icon": "☢️", "name": "Реактор",           "desc": "+2K/с",     "base": 90000,                  "cps": 2000.0,         "mult": 1.55},
-    {"id": "station",  "icon": "🛰️", "name": "Космостанция",      "desc": "+12K/с",    "base": 500000,                 "cps": 12000.0,        "mult": 1.60},
-    {"id": "colony",   "icon": "🌕", "name": "Лунная база",       "desc": "+80K/с",    "base": 3000000,                "cps": 80000.0,        "mult": 1.65},
-    {"id": "shipyard", "icon": "🚀", "name": "Верфь",             "desc": "+500K/с",   "base": 20000000,               "cps": 500000.0,       "mult": 1.70},
-    {"id": "dyson",    "icon": "🌐", "name": "Сфера Дайсона",     "desc": "+3M/с",     "base": 150000000,              "cps": 3000000.0,      "mult": 1.75},
-    {"id": "galaxy",   "icon": "🌌", "name": "Галактика",         "desc": "+20M/с",    "base": 1000000000,             "cps": 20000000.0,     "mult": 1.80},
-    {"id": "universe", "icon": "✨", "name": "Вселенная",         "desc": "+150M/с",   "base": 8000000000,             "cps": 150000000.0,    "mult": 1.85},
-    {"id": "time",     "icon": "⏳", "name": "Машина времени",    "desc": "+1B/с",     "base": 60000000000,            "cps": 1000000000.0,   "mult": 1.90},
-    {"id": "god",      "icon": "👁️", "name": "Око Бога",          "desc": "+8B/с",     "base": 500000000000,           "cps": 8000000000.0,   "mult": 1.95},
-    {"id": "eternal",  "icon": "♾️", "name": "Вечность",          "desc": "+75B/с",    "base": 5000000000000,          "cps": 75000000000.0,  "mult": 2.00},
-    {"id": "cosmos",   "icon": "🌠", "name": "Космическая сеть",  "desc": "+900B/с",   "base": 500000000000000,        "cps": 900000000000.0, "mult": 2.05},
-    {"id": "multiv",   "icon": "🌀", "name": "Порталы",           "desc": "+15T/с",    "base": 60000000000000000,      "cps": 15000000000000.0,"mult": 2.10},
-    {"id": "omni",     "icon": "🔮", "name": "Кристалл силы",     "desc": "+300T/с",   "base": 1e22,                   "cps": 3e14,           "mult": 2.15},
-    {"id": "infinity", "icon": "💎", "name": "Ядро мира",         "desc": "+8Qa/с",    "base": 1e26,                   "cps": 8e15,           "mult": 2.20},
-    {"id": "transc",   "icon": "👑", "name": "Трон творца",       "desc": "+250Qa/с",  "base": 1e30,                   "cps": 2.5e17,         "mult": 2.25},
+    {"id": "clicker", "icon": "👆", "name": "Палец-робот", "desc": "+0.2/с", "base": 15, "cps": 0.2, "mult": 1.30},
+    {"id": "farm", "icon": "🌾", "name": "Ферма", "desc": "+1.5/с", "base": 100, "cps": 1.5, "mult": 1.35},
+    {"id": "rig", "icon": "⛏️", "name": "Шахта", "desc": "+8/с", "base": 500, "cps": 8.0, "mult": 1.40},
+    {"id": "factory", "icon": "🏭", "name": "Завод", "desc": "+50/с", "base": 3000, "cps": 50.0, "mult": 1.45},
+    {"id": "lab", "icon": "🔬", "name": "Лаборатория", "desc": "+300/с", "base": 15000, "cps": 300.0, "mult": 1.50},
+    {"id": "reactor", "icon": "☢️", "name": "Реактор", "desc": "+2K/с", "base": 90000, "cps": 2000.0, "mult": 1.55},
+    {"id": "station", "icon": "🛰️", "name": "Космостанция", "desc": "+12K/с", "base": 500000, "cps": 12000.0,
+     "mult": 1.60},
+    {"id": "colony", "icon": "🌕", "name": "Лунная база", "desc": "+80K/с", "base": 3000000, "cps": 80000.0,
+     "mult": 1.65},
+    {"id": "shipyard", "icon": "🚀", "name": "Верфь", "desc": "+500K/с", "base": 20000000, "cps": 500000.0,
+     "mult": 1.70},
+    {"id": "dyson", "icon": "🌐", "name": "Сфера Дайсона", "desc": "+3M/с", "base": 150000000, "cps": 3000000.0,
+     "mult": 1.75},
+    {"id": "galaxy", "icon": "🌌", "name": "Галактика", "desc": "+20M/с", "base": 1000000000, "cps": 20000000.0,
+     "mult": 1.80},
+    {"id": "universe", "icon": "✨", "name": "Вселенная", "desc": "+150M/с", "base": 8000000000, "cps": 150000000.0,
+     "mult": 1.85},
+    {"id": "time", "icon": "⏳", "name": "Машина времени", "desc": "+1B/с", "base": 60000000000, "cps": 1000000000.0,
+     "mult": 1.90},
+    {"id": "god", "icon": "👁️", "name": "Око Бога", "desc": "+8B/с", "base": 500000000000, "cps": 8000000000.0,
+     "mult": 1.95},
+    {"id": "eternal", "icon": "♾️", "name": "Вечность", "desc": "+75B/с", "base": 5000000000000, "cps": 75000000000.0,
+     "mult": 2.00},
+    {"id": "cosmos", "icon": "🌠", "name": "Космическая сеть", "desc": "+900B/с", "base": 500000000000000,
+     "cps": 900000000000.0, "mult": 2.05},
+    {"id": "multiv", "icon": "🌀", "name": "Порталы", "desc": "+15T/с", "base": 60000000000000000,
+     "cps": 15000000000000.0, "mult": 2.10},
+    {"id": "omni", "icon": "🔮", "name": "Кристалл силы", "desc": "+300T/с", "base": 1e22, "cps": 3e14, "mult": 2.15},
+    {"id": "infinity", "icon": "💎", "name": "Ядро мира", "desc": "+8Qa/с", "base": 1e26, "cps": 8e15, "mult": 2.20},
+    {"id": "transc", "icon": "👑", "name": "Трон творца", "desc": "+250Qa/с", "base": 1e30, "cps": 2.5e17, "mult": 2.25},
 ]
 
-# ============ КОЛЛЕКЦИЯ ============
 COLLECTION = [
-    {"id": "villa",     "icon": "🏠", "name": "Вилла",         "desc": "+5% к клику",  "base": 5000,              "bonus": 0.05, "cps_bonus": 0.0},
-    {"id": "car",       "icon": "🚗", "name": "Машина",        "desc": "+8% к клику",  "base": 25000,             "bonus": 0.08, "cps_bonus": 0.0},
-    {"id": "yacht",     "icon": "🛥️", "name": "Яхта",          "desc": "+12% к клику", "base": 150000,            "bonus": 0.12, "cps_bonus": 0.0},
-    {"id": "jet",       "icon": "✈️", "name": "Джет",          "desc": "+20% к клику", "base": 1200000,           "bonus": 0.20, "cps_bonus": 0.02},
-    {"id": "island",    "icon": "🏝️", "name": "Остров",        "desc": "+35% к клику", "base": 10000000,          "bonus": 0.35, "cps_bonus": 0.03},
-    {"id": "rocket",    "icon": "🚀", "name": "Ракета",        "desc": "+60% к клику", "base": 150000000,         "bonus": 0.60, "cps_bonus": 0.05},
-    {"id": "moonbase",  "icon": "🌕", "name": "Лунная база",   "desc": "+100% к клику","base": 2000000000,        "bonus": 1.00, "cps_bonus": 0.08},
-    {"id": "dyson2",    "icon": "🌐", "name": "Сфера Дайсона", "desc": "+200% к клику","base": 50000000000,       "bonus": 2.00, "cps_bonus": 0.15},
-    {"id": "galaxy2",   "icon": "🌌", "name": "Галактика",     "desc": "+500% к клику","base": 1e15,              "bonus": 5.00, "cps_bonus": 0.25},
-    {"id": "crown",     "icon": "👑", "name": "Корона",        "desc": "+1000% к клику","base": 1e20,             "bonus": 10.0, "cps_bonus": 0.50},
+    {"id": "villa", "icon": "🏠", "name": "Вилла", "desc": "+5% к клику", "base": 5000, "bonus": 0.05, "cps_bonus": 0.0},
+    {"id": "car", "icon": "🚗", "name": "Машина", "desc": "+8% к клику", "base": 25000, "bonus": 0.08, "cps_bonus": 0.0},
+    {"id": "yacht", "icon": "🛥️", "name": "Яхта", "desc": "+12% к клику", "base": 150000, "bonus": 0.12,
+     "cps_bonus": 0.0},
+    {"id": "jet", "icon": "✈️", "name": "Джет", "desc": "+20% к клику", "base": 1200000, "bonus": 0.20,
+     "cps_bonus": 0.02},
+    {"id": "island", "icon": "🏝️", "name": "Остров", "desc": "+35% к клику", "base": 10000000, "bonus": 0.35,
+     "cps_bonus": 0.03},
+    {"id": "rocket", "icon": "🚀", "name": "Ракета", "desc": "+60% к клику", "base": 150000000, "bonus": 0.60,
+     "cps_bonus": 0.05},
+    {"id": "moonbase", "icon": "🌕", "name": "Лунная база", "desc": "+100% к клику", "base": 2000000000, "bonus": 1.00,
+     "cps_bonus": 0.08},
+    {"id": "dyson2", "icon": "🌐", "name": "Сфера Дайсона", "desc": "+200% к клику", "base": 50000000000, "bonus": 2.00,
+     "cps_bonus": 0.15},
+    {"id": "galaxy2", "icon": "🌌", "name": "Галактика", "desc": "+500% к клику", "base": 1e15, "bonus": 5.00,
+     "cps_bonus": 0.25},
+    {"id": "crown", "icon": "👑", "name": "Корона", "desc": "+1000% к клику", "base": 1e20, "bonus": 10.0,
+     "cps_bonus": 0.50},
 ]
 
 
-# ============ ПЕРЕРОЖДЕНИЕ ============
+# ============ EMAIL ФУНКЦИИ ============
+def send_email(to_email: str, subject: str, html_body: str) -> bool:
+    if not to_email or "@" not in to_email:
+        return False
+    try:
+        resend.Emails.send({
+            "from": RESEND_FROM,
+            "to": to_email,
+            "subject": subject,
+            "html": html_body,
+        })
+        return True
+    except Exception as e:
+        print(f"[email] ошибка: {e}")
+        return False
+
+
+def email_wrapper(title: str, body_html: str) -> str:
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:60px 20px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:500px;background:#111317;border-radius:16px;border:1px solid rgba(255,255,255,0.06);padding:48px 40px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+
+        <tr><td style="padding-bottom:40px;text-align:center;">
+          <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
+            imdown<span style="color:#ff7a4a;">.pro</span>
+          </span>
+        </td></tr>
+
+        <tr><td style="text-align:center;">
+          <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">{title}</h1>
+          <div style="font-size:15px;line-height:1.7;color:#8a93a6;">{body_html}</div>
+        </td></tr>
+
+        <tr><td style="padding-top:48px;text-align:center;">
+          <div style="font-size:12px;color:#444;border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
+            © 2026 imdown.pro
+          </div>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+
+
+def send_welcome_email(to_email: str, name: str):
+    subject = "Добро пожаловать в imdown.pro"
+    body = f"""
+      <p style="margin-bottom:16px;">Привет, <b style="color:#fff;">{name}</b>!</p>
+      <p style="margin-bottom:32px;">Твой Down ID успешно создан. Теперь тебе доступны все проекты и функции платформы.</p>
+      <a href="https://imdown.pro" style="display:inline-block;padding:14px 32px;background:#fff;color:#000;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">Перейти на сайт</a>
+    """
+    return send_email(to_email, subject, email_wrapper("Добро пожаловать", body))
+
+
+def send_password_changed_email(to_email: str, name: str):
+    subject = "Пароль изменён · imdown.pro"
+    body = f"""
+      <p style="margin-bottom:16px;">Привет, <b style="color:#fff;">{name}</b>!</p>
+      <p style="margin-bottom:24px;">Твой пароль от Down ID был успешно изменён.</p>
+      <div style="padding:16px;background:rgba(255,122,74,.1);border-left:3px solid #ff7a4a;border-radius:6px;text-align:left;">
+        <span style="font-size:13px;color:#b09a9a;">Если это был <b>не ты</b>, срочно свяжись со мной через <a href="https://imdown.pro/contact" style="color:#ff7a4a;">контакты</a>.</span>
+      </div>
+    """
+    return send_email(to_email, subject, email_wrapper("Пароль изменён", body))
+
+def send_email_verification(to_email: str, name: str, code: str):
+    subject = "Код подтверждения · imdown.pro"
+    body = f"""
+      <p style="margin-bottom:16px;">Привет, <b style="color:#fff;">{name}</b>!</p>
+      <p style="margin-bottom:24px;">Ты запросил привязку email к Down ID. Твой код подтверждения:</p>
+      <div style="text-align:center; margin:32px 0;">
+        <span style="display:inline-block; padding:16px 32px; background:rgba(255,122,74,0.1); border:1px dashed #ff7a4a; border-radius:12px; font-size:32px; font-weight:900; letter-spacing:6px; color:#ff7a4a;">{code}</span>
+      </div>
+      <p style="font-size:13px; color:#8a93a6;">Код действителен в течение 15 минут. Если ты этого не делал — просто проигнорируй письмо.</p>
+    """
+    return send_email(to_email, subject, email_wrapper("Подтверждение Email", body))
+
 def rebirth_threshold(rebirths):
     return REBIRTH_BASE * (REBIRTH_STEP ** rebirths)
 
 
 def rebirth_bonus(rebirths):
-    """Формула Б: квадрат."""
     return float(rebirths) * float(rebirths)
 
 
-# ============ ЮЗЕР ============
 def default_user(pw_hash):
     now = int(time.time())
     u = {
         "pass": pw_hash,
+        "email": "",
         "score": 0.0,
         "power": 1000.0,
         "cps": 0.0,
@@ -184,6 +285,7 @@ def default_user(pw_hash):
 def migrate(u):
     changed = False
     base_defaults = {
+        "email": "",
         "score": 0.0, "power": 1000.0, "cps": 0.0,
         "lvl": 1, "next": 100, "total_earned": 0.0,
         "total_earned_all": 0.0, "best_score": 0.0, "rebirths": 0,
@@ -220,7 +322,6 @@ def migrate(u):
     return u
 
 
-# ============ МНОЖИТЕЛИ ============
 def click_mult(u):
     total = 0.0
     for i in COLLECTION:
@@ -237,7 +338,6 @@ def cps_mult(u):
     return total
 
 
-# ============ ОФФЛАЙН ============
 def offline_gain(u):
     last = u.get("last_seen", 0)
     if not last:
@@ -250,7 +350,6 @@ def offline_gain(u):
     return u.get("cps", 0.0) * elapsed
 
 
-# ============ ЕЖЕДНЕВКА ============
 def daily_state(u):
     now = int(time.time())
     last = u.get("daily_last", 0)
@@ -325,7 +424,6 @@ async def game_preview():
     return read_tpl("game_preview.html")
 
 
-# ============ РЕЙТИНГ ============
 @app.get("/leaderboard", response_class=HTMLResponse)
 async def leaderboard_page(request: Request):
     data = load()
@@ -365,16 +463,16 @@ async def login_page(request: Request, error: str = None, next: str = "/account"
             return RedirectResponse(next, status_code=303)
     html = read_tpl("login.html")
     html = html.replace("__ERROR__",
-        f'<div class="err">{error}</div>' if error else "")
+                        f'<div class="err">{error}</div>' if error else "")
     html = html.replace("__NEXT__", next)
     return html
 
 
 @app.post("/login_user")
 async def login_user(
-    u_login: str = Form(...),
-    u_pass: str = Form(...),
-    next: str = Form("/account"),
+        u_login: str = Form(...),
+        u_pass: str = Form(...),
+        next: str = Form("/account"),
 ):
     u_login = u_login.strip()
     if not re.fullmatch(r"[A-Za-z0-9_]{3,20}", u_login):
@@ -409,17 +507,17 @@ async def register_page(request: Request, error: str = None, next: str = "/accou
             return RedirectResponse(next, status_code=303)
     html = read_tpl("register.html")
     html = html.replace("__ERROR__",
-        f'<div class="err">{error}</div>' if error else "")
+                        f'<div class="err">{error}</div>' if error else "")
     html = html.replace("__NEXT__", next)
     return html
 
 
 @app.post("/register_user")
 async def register_user(
-    u_login: str = Form(...),
-    u_pass: str = Form(...),
-    u_pass2: str = Form(...),
-    next: str = Form("/account"),
+        u_login: str = Form(...),
+        u_pass: str = Form(...),
+        u_pass2: str = Form(...),
+        next: str = Form("/account"),
 ):
     u_login = u_login.strip()
     if not re.fullmatch(r"[A-Za-z0-9_]{3,20}", u_login):
@@ -462,8 +560,10 @@ async def account_page(request: Request, error: str = None, ok: str = None):
     data = load()
     if user not in data:
         return RedirectResponse("/login", status_code=303)
+    u = data[user]
     html = read_tpl("account.html")
     html = html.replace("__NAME__", user)
+    html = html.replace("__EMAIL__", u.get("email", "") or "—")
     msg = ""
     if error:
         msg = f'<div class="msg err">{error}</div>'
@@ -475,9 +575,9 @@ async def account_page(request: Request, error: str = None, ok: str = None):
 
 @app.post("/change_login")
 async def change_login(
-    request: Request,
-    current_pass: str = Form(...),
-    new_login: str = Form(...),
+        request: Request,
+        current_pass: str = Form(...),
+        new_login: str = Form(...),
 ):
     user, trusted = current_user(request)
     if not user:
@@ -506,10 +606,10 @@ async def change_login(
 
 @app.post("/change_password")
 async def change_password(
-    request: Request,
-    current_pass: str = Form(...),
-    new_pass: str = Form(...),
-    new_pass2: str = Form(...),
+        request: Request,
+        current_pass: str = Form(...),
+        new_pass: str = Form(...),
+        new_pass2: str = Form(...),
 ):
     user, _ = current_user(request)
     if not user:
@@ -529,8 +629,108 @@ async def change_password(
             "/account?error=Неверный+текущий+пароль", status_code=303)
     u["pass"] = hash_pass(new_pass)
     save(data)
+    if u.get("email"):
+        try:
+            send_password_changed_email(u["email"], user)
+        except Exception as e:
+            print(f"[password] письмо: {e}")
     return RedirectResponse("/account?ok=Пароль+изменён", status_code=303)
 
+
+# ... (остальные функции оставляем)
+
+@app.post("/change_email")
+async def request_email_change(
+        request: Request,
+        current_pass: str = Form(...),
+        new_email: str = Form(...),
+):
+    user, _ = current_user(request)
+    if not user:
+        return {"ok": False, "error": "Не авторизован"}
+
+    new_email = (new_email or "").strip().lower()
+    if "@" not in new_email or len(new_email) > 100:
+        return {"ok": False, "error": "Некорректный email"}
+
+    data = load()
+    u = data.get(user)
+    if not u:
+        return {"ok": False, "error": "Пользователь не найден"}
+
+    if not verify_pass(current_pass, u["pass"]):
+        return {"ok": False, "error": "Неверный пароль"}
+
+    # ПРОВЕРКА НА УНИКАЛЬНОСТЬ ПОЧТЫ
+    for other_user, other_data in data.items():
+        if other_user != user and other_data.get("email", "").lower() == new_email:
+            return {"ok": False, "error": "Этот email уже привязан к другому аккаунту"}
+
+    # ЗАЩИТА: 60 секунд
+    now = int(time.time())
+    last_sent = u.get("email_code_sent_at", 0)
+    if now - last_sent < 60:
+        left = 60 - (now - last_sent)
+        return {"ok": False, "error": f"Подожди {left} сек перед повторной отправкой"}
+
+    # Генерируем новый код
+    code = str(secrets.randbelow(900000) + 100000)
+    u["email_pending"] = new_email
+    u["email_code"] = code
+    u["email_code_sent_at"] = now
+    u["email_code_attempts"] = 0
+    data[user] = u
+    save(data)
+
+    try:
+        send_email_verification(new_email, user, code)
+    except Exception as e:
+        print(f"[email_verify] письмо: {e}")
+        return {"ok": False, "error": "Ошибка отправки письма"}
+
+    return {"ok": True, "message": "Код отправлен на почту"}
+
+
+@app.post("/verify_email_code")
+async def verify_email_code(
+        request: Request,
+        code: str = Form(...),
+):
+    user, _ = current_user(request)
+    if not user:
+        return {"ok": False, "error": "Не авторизован"}
+
+    data = load()
+    u = data.get(user)
+    if not u:
+        return {"ok": False, "error": "Пользователь не найден"}
+
+    pending = u.get("email_pending")
+    expected = u.get("email_code")
+
+    if not pending or not expected:
+        return {"ok": False, "error": "Нет активного запроса"}
+
+    attempts = u.get("email_code_attempts", 0)
+    if attempts >= 5:
+        u["email_pending"] = None
+        u["email_code"] = None
+        save(data)
+        return {"ok": False, "error": "Слишком много попыток, запроси заново"}
+
+    if code.strip() != expected:
+        u["email_code_attempts"] = attempts + 1
+        save(data)
+        return {"ok": False, "error": "Неверный код"}
+
+    # Успех
+    u["email"] = pending
+    u["email_pending"] = None
+    u["email_code"] = None
+    u["email_code_attempts"] = 0
+    save(data)
+
+    return {"ok": True, "message": "Почта успешно привязана"}
 
 # ============ DOWN GAMES ============
 @app.get("/games", response_class=HTMLResponse)
@@ -604,9 +804,6 @@ async def clickerdown(request: Request):
         return RedirectResponse("/consent?service=downgames", status_code=303)
 
     u = migrate(data[user])
-    # Пересчёт power по новой формуле (lvl² × 1000)
-    if u.get("lvl", 1) > 1:
-        u["power"] = float(u["lvl"] * u["lvl"] * 1000)
     off = offline_gain(u)
     if off > 0:
         u["score"] += off
@@ -636,19 +833,18 @@ async def clickerdown(request: Request):
         "rebirthThreshold": rebirth_threshold(rb),
         "prices": {i["id"]: u[f"c_{i['id']}"] for i in SHOP},
         "counts": {i["id"]: u[f"n_{i['id']}"] for i in SHOP},
-        "owned":  {i["id"]: u[f"o_{i['id']}"] for i in COLLECTION},
+        "owned": {i["id"]: u[f"o_{i['id']}"] for i in COLLECTION},
         "daily": {"can": can_claim, "seconds_left": left,
                   "streak": streak, "bonus": bonus},
     }
     html = read_tpl("clickerdown.html")
-    html = html.replace("/*__SHOP__*/",       json.dumps(SHOP, ensure_ascii=False))
+    html = html.replace("/*__SHOP__*/", json.dumps(SHOP, ensure_ascii=False))
     html = html.replace("/*__COLLECTION__*/", json.dumps(COLLECTION, ensure_ascii=False))
-    html = html.replace("/*__THEMES__*/",     json.dumps(THEMES, ensure_ascii=False))
-    html = html.replace("/*__STATE__*/",      json.dumps(state, ensure_ascii=False))
+    html = html.replace("/*__THEMES__*/", json.dumps(THEMES, ensure_ascii=False))
+    html = html.replace("/*__STATE__*/", json.dumps(state, ensure_ascii=False))
     return html
 
 
-# ============ ПЕРЕРОЖДЕНИЕ ============
 @app.post("/rebirth")
 async def do_rebirth(request: Request):
     user, _ = current_user(request)
@@ -667,7 +863,6 @@ async def do_rebirth(request: Request):
         return {"ok": False, "reason": "not_enough",
                 "threshold": threshold, "have": total}
 
-    # Сброс текущего забега
     u["rebirths"] = rb + 1
     u["score"] = 0.0
     u["power"] = 1000.0
@@ -720,10 +915,10 @@ async def claim_daily_route(request: Request):
 
 @app.post("/save")
 async def save_progress(
-    request: Request,
-    payload: str = Form(...),
-    client_time: int = Form(0),
-    session_id: str = Form(""),
+        request: Request,
+        payload: str = Form(...),
+        client_time: int = Form(0),
+        session_id: str = Form(""),
 ):
     user, _ = current_user(request)
     if not user:

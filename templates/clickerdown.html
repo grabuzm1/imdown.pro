@@ -1,11 +1,27 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="icon" type="image/png" href="/static/favicon.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Clicker Down · imdown.pro</title>
+<title>Clicker Down 🎃 · imdown.pro</title>
 <style>
+body.theme-halloween{
+  --bg:#0f0a0d;
+  --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
+    rgba(255,122,74,.15) 0%,
+    rgba(181,123,255,.10) 40%,
+    transparent 70%);
+  --text:#fdf2ee;
+  --muted:#a89292;
+  --accent:#ff7a4a;
+  --accent2:#b57bff;
+  --gold:#ffd166;
+  --ok:#4ade80;
+  --card-bg:rgba(255,255,255,.035);
+  --card-border:rgba(255,150,120,.10);
+  --score-grad:linear-gradient(180deg,#ffd166 0%, #ff7a4a 55%, #b57bff 100%);
+  --ripple:rgba(255,122,74,.35);
+}
 body.theme-sunset{
   --bg:#1a1014;
   --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
@@ -57,8 +73,41 @@ body{
   overscroll-behavior-y:contain;
   transition:background .4s ease, color .3s ease;
 }
-.wrap{max-width:440px;margin:0 auto}
 
+/* ==== КАЧАЮЩИЕСЯ ТЫКВЫ СВЕРХУ ==== */
+.garland{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:90px;
+  pointer-events:none;
+  z-index:1;
+}
+.garland-item{
+  position:absolute;
+  top:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  transform-origin:top center;
+  animation:swing 3s ease-in-out infinite;
+}
+.garland-thread{
+  width:1px;
+  height:40px;
+  background:linear-gradient(180deg, transparent, rgba(255,255,255,.3));
+}
+.garland-emoji{
+  font-size:22px;
+  filter:drop-shadow(0 0 6px rgba(255,122,74,.4));
+}
+@keyframes swing{
+  0%,100%{transform:rotate(-5deg)}
+  50%{transform:rotate(5deg)}
+}
+
+.wrap{max-width:440px;margin:0 auto;position:relative;z-index:2;padding-top:20px}
+
+/* ==== ШАПКА ==== */
 .topbar{
   display:flex;justify-content:space-between;align-items:center;
   margin-bottom:20px;font-size:14px;color:var(--muted);
@@ -71,11 +120,6 @@ body{
   width:8px;height:8px;border-radius:50%;
   background:var(--accent);
   box-shadow:0 0 10px var(--accent2);
-  animation:dotPulse 2s ease-in-out infinite;
-}
-@keyframes dotPulse{
-  0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 10px var(--accent2)}
-  50%{opacity:.6;transform:scale(1.25);box-shadow:0 0 18px var(--accent2)}
 }
 .nav{display:flex;gap:8px;align-items:center}
 .nav a, .nav button{
@@ -94,10 +138,11 @@ body{
 }
 .nav .btn-home:hover{background:var(--card-bg);border-color:var(--accent)}
 
+/* ==== КЛИК-ЗОНА ==== */
 .clicker-zone{
   position:relative;
   border-radius:22px;
-  padding:44px 20px 36px;
+  padding:16px 20px 32px;
   margin-bottom:16px;
   background:rgba(255,255,255,.02);
   border:1px solid var(--card-border);
@@ -109,23 +154,40 @@ body{
 .clicker-zone::before{
   content:"";position:absolute;inset:0;
   background:radial-gradient(circle at 50% 100%, var(--ripple) 0%, transparent 60%);
-  opacity:.4;
+  opacity:.3;
   pointer-events:none;
 }
 .clicker-zone:active{
   transform:scale(.99);
   border-color:var(--accent);
 }
+
+.pumpkin-wrap{
+  display:flex;
+  justify-content:center;
+  margin-bottom:10px;
+  position:relative;
+  z-index:1;
+}
+.pumpkin{
+  font-size:48px;
+  filter:drop-shadow(0 0 12px rgba(255,122,74,.5));
+  transition:transform .1s ease;
+}
+.clicker-zone:active .pumpkin{
+  transform:scale(.92);
+}
+
 .score-value{
   position:relative;
-  font-size:clamp(44px, 9vw, 56px);
+  font-size:clamp(40px, 8vw, 52px);
   font-weight:900;letter-spacing:-2.5px;line-height:1;
-  margin-bottom:14px;
+  margin-bottom:12px;
   background:var(--score-grad);
   -webkit-background-clip:text;background-clip:text;color:transparent;
   z-index:1;word-break:break-all;
 }
-.score-unit{font-size:22px;font-weight:700;opacity:.8;margin-left:3px}
+.score-unit{font-size:20px;font-weight:700;opacity:.8;margin-left:3px}
 .score-meta{
   position:relative;z-index:1;
   display:flex;justify-content:center;gap:14px;
@@ -149,6 +211,7 @@ body{
   100%{opacity:0;transform:translate(-50%,-50%) scale(6)}
 }
 
+/* ==== УРОВЕНЬ ==== */
 .level{
   padding:14px 16px;border-radius:12px;
   background:var(--card-bg);border:1px solid var(--card-border);
@@ -163,6 +226,7 @@ body{
   border-radius:999px;transition:width .25s ease;
 }
 
+/* ==== ЕЖЕДНЕВКА ==== */
 .daily{
   display:flex;align-items:center;gap:12px;
   padding:12px 16px;border-radius:12px;
@@ -183,6 +247,7 @@ body{
 .daily .btn:hover:not(:disabled){background:var(--card-bg);border-color:var(--accent)}
 .daily .btn:disabled{border-color:var(--card-border);color:var(--muted);cursor:not-allowed}
 
+/* ==== ВКЛАДКИ ==== */
 .tabs{
   display:flex;gap:0;margin-bottom:20px;
   border-bottom:1px solid var(--card-border);
@@ -363,6 +428,7 @@ body{
 .swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0;pointer-events:none}
 .swatch.sunset{background:linear-gradient(135deg,#ff7a4a,#ff4a8b)}
 .swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
+.swatch.halloween{background:linear-gradient(135deg,#ff7a4a,#b57bff)}
 .close-x{
   width:100%;padding:11px;border-radius:9px;
   background:var(--card-bg);
@@ -387,14 +453,19 @@ body{
 
 @media (max-width:420px){
   body{padding:20px 16px 60px}
-  .score-value{font-size:44px;letter-spacing:-2px}
-  .clicker-zone{padding:36px 16px 30px}
+  .score-value{font-size:40px;letter-spacing:-2px}
+  .clicker-zone{padding:12px 16px 28px}
   .item{grid-template-columns:40px 1fr auto;gap:12px}
   .icon{width:40px;height:40px;font-size:17px}
   .nav{gap:6px}
   .nav .btn-home{padding:5px 10px;font-size:11px}
+  .pumpkin{font-size:40px}
+  .garland-emoji{font-size:18px}
+  .garland-thread{height:30px}
 }
-</style></head><body class="theme-sunset">
+</style></head><body class="theme-halloween">
+
+<div class="garland" id="garland"></div>
 
 <div class="wrap">
 
@@ -408,6 +479,9 @@ body{
   </div>
 
   <div class="clicker-zone" id="btn">
+    <div class="pumpkin-wrap">
+      <div class="pumpkin">🎃</div>
+    </div>
     <div class="score-value"><span id="s">0</span><span class="score-unit">⚡</span></div>
     <div class="score-meta">
       <span>В сек: <b id="c">0.0</b></span>
@@ -436,7 +510,7 @@ body{
   <div class="tabs" id="tabs">
     <div class="tab active" data-tab="gen">Улучшения</div>
     <div class="tab" data-tab="col">Коллекция</div>
-    <div class="tab" data-tab="reb">💎 Перерождение</div>
+    <div class="tab" data-tab="reb">Перерождение</div>
   </div>
 
   <div class="shead" id="shop-shead">
@@ -470,17 +544,12 @@ const STATE      = /*__STATE__*/;
 let score = STATE.score, power = STATE.power, cps = STATE.cps;
 let lvl = STATE.lvl, next = STATE.next;
 let totalEarned = STATE.total_earned || STATE.score;
-
-// Форсированный пересчёт power по новой формуле
-if (lvl > 1){
-  power = Math.floor(lvl * lvl * 1000);
-}
 let totalEarnedAll = STATE.total_earned_all || 0;
 let counts = Object.assign({}, STATE.counts);
 let ownedMap = Object.assign({}, STATE.owned);
 let clickMult = STATE.clickMult || 0;
 let cpsMult = STATE.cpsMult || 0;
-let themeId = STATE.theme || 'sunset';
+let themeId = 'halloween';
 let buyMode = 1, tab = 'gen';
 let daily = STATE.daily || { can: false, seconds_left: 0, streak: 0, bonus: 0 };
 let rebirths = STATE.rebirths || 0;
@@ -489,6 +558,22 @@ let rebirthThreshold = STATE.rebirthThreshold || 1e15;
 
 const MAX_BUY = 10000000;
 const $ = id => document.getElementById(id);
+
+/* ==== ГИРЛЯНДА ИЗ ТЫКВ ==== */
+(function(){
+  const garland = document.getElementById('garland');
+  const count = window.innerWidth < 600 ? 5 : 6;
+  for (let i = 0; i < count; i++){
+    const el = document.createElement('div');
+    el.className = 'garland-item';
+    const leftPercent = (100 / (count + 1)) * (i + 1);
+    el.style.left = leftPercent + '%';
+    el.style.animationDelay = (i * 0.3) + 's';
+    el.style.animationDuration = (2.8 + Math.random() * 1.2) + 's';
+    el.innerHTML = '<div class="garland-thread"></div><div class="garland-emoji">🎃</div>';
+    garland.appendChild(el);
+  }
+})();
 
 const fmt = n => {
   if (!isFinite(n)) n = 0;
@@ -751,7 +836,12 @@ $('modes').addEventListener('click', function(e){
 
 function openSettings(){
   const box = $('themes'); box.innerHTML = '';
-  THEMES.forEach(t => {
+  const themesList = [
+    { id: 'halloween', name: '🎃 Halloween' },
+    { id: 'sunset', name: 'Sunset' },
+    { id: 'midnight', name: 'Midnight' }
+  ];
+  themesList.forEach(t => {
     const el = document.createElement('div');
     el.className = 'theme-chip' + (t.id === themeId ? ' active' : '');
     el.innerHTML = '<div class="swatch ' + t.id + '"></div>' + t.name;

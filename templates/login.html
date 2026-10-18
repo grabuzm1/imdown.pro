@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="icon" type="image/png" href="/static/favicon.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>Down ID · Вход</title>
 <style>
@@ -88,7 +88,12 @@ body::before{
   font-size:13px;
   margin-bottom:26px;
 }
-.field{position:relative;margin-bottom:12px}
+
+/* Стили для полей ввода */
+.field{
+  position:relative;
+  margin-bottom:12px;
+}
 .field input{
   width:100%;
   padding:13px 15px;
@@ -105,7 +110,18 @@ body::before{
   border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(95,240,255,.15);
 }
-.field input::placeholder{color:#5a6376}
+.field input::placeholder{
+  color:#5a6376;
+}
+
+/* Убираем белый фон автозаполнения Chrome */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgba(0,0,0,.4) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
 
 .btn{
   width:100%;
@@ -195,7 +211,7 @@ body::before{
   </div>
   <div class="sub">Войди, чтобы продолжить</div>
 
-  <input type="hidden" name="next" value="/clickerdown"
+  <input type="hidden" name="next" value="__NEXT__">
 
   <div class="field">
     <input type="text" name="u_login"

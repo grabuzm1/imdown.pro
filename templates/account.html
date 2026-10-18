@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="icon" type="image/png" href="/static/favicon.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>Аккаунт · Down ID</title>
 <style>
@@ -11,6 +11,8 @@
   --accent:#5ff0ff;
   --accent2:#8ab0ff;
   --purple:#b57bff;
+  --card-border: rgba(255,255,255,.1);
+  --card-bg: rgba(15,18,25,.6);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -83,8 +85,8 @@ body::before{
 .header p{color:var(--muted);font-size:13px}
 
 .card{
-  background:rgba(15,18,25,.6);
-  border:1px solid rgba(255,255,255,.08);
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
   border-radius:16px;
   padding:24px;
   margin-bottom:14px;
@@ -98,6 +100,8 @@ body::before{
 .card:nth-child(1){animation-delay:.05s}
 .card:nth-child(2){animation-delay:.12s}
 .card:nth-child(3){animation-delay:.19s}
+.card:nth-child(4){animation-delay:.26s}
+.card:nth-child(5){animation-delay:.33s}
 @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
 
 .card h2{
@@ -111,6 +115,7 @@ body::before{
 }
 .card h2 .ico{opacity:.9}
 
+/* Базовые стили для ВСЕХ полей ввода */
 .field{margin-bottom:12px}
 .field label{
   display:block;
@@ -123,9 +128,9 @@ body::before{
   width:100%;
   padding:11px 14px;
   border-radius:10px;
-  border:1px solid rgba(255,255,255,.1);
-  background:rgba(0,0,0,.4);
-  color:var(--text);
+  border:1px solid var(--card-border);
+  background:rgba(0,0,0,.4) !important;
+  color:var(--text) !important;
   font-size:14px;
   font-family:inherit;
   transition:border-color .2s ease, box-shadow .2s ease;
@@ -136,6 +141,15 @@ body::before{
   box-shadow:0 0 0 3px rgba(95,240,255,.15);
 }
 .field input::placeholder{color:#5a6376}
+
+/* Убираем белый фон автозаполнения Chrome */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgba(0,0,0,.4) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
 
 .btn{
   padding:11px 18px;
@@ -153,22 +167,15 @@ body::before{
   color:#000;
   box-shadow:0 6px 20px rgba(95,240,255,.3);
 }
-.btn-primary:hover{
+.btn-primary:hover:not(:disabled){
   transform:translateY(-1px);
   box-shadow:0 10px 28px rgba(95,240,255,.5);
 }
-.btn-danger{
-  background:rgba(255,107,122,.12);
-  color:#ff6b7a;
-  border:1px solid rgba(255,107,122,.3);
-}
+.btn-primary:disabled{opacity:0.5; cursor:not-allowed; box-shadow:none; transform:none;}
+.btn-danger{background:rgba(255,107,122,.12); color:#ff6b7a; border:1px solid rgba(255,107,122,.3);}
 .btn-danger:hover{background:rgba(255,107,122,.2)}
-.btn-ghost{
-  background:rgba(255,255,255,.06);
-  color:var(--muted);
-  border:1px solid rgba(255,255,255,.1);
-}
-.btn-ghost:hover{color:var(--text);background:rgba(255,255,255,.1)}
+.btn-ghost{background:rgba(255,255,255,.06); color:var(--muted); border:1px solid rgba(255,255,255,.1);}
+.btn-ghost:hover{color:var(--text); background:rgba(255,255,255,.1)}
 
 .msg{
   text-align:center;
@@ -176,90 +183,62 @@ body::before{
   padding:10px 14px;
   margin-bottom:16px;
   border-radius:10px;
-  opacity:0;
-  animation:fadeUp .4s ease-out .3s forwards;
 }
-.msg.ok{
-  color:#4ade80;
-  background:rgba(74,222,128,.08);
-  border:1px solid rgba(74,222,128,.25);
-}
-.msg.err{
-  color:#ff6b7a;
-  background:rgba(255,107,122,.08);
-  border:1px solid rgba(255,107,122,.25);
-}
-/* Бета-модалка */
+.msg.ok{color:#4ade80; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.25);}
+.msg.err{color:#ff6b7a; background:rgba(255,107,122,.08); border:1px solid rgba(255,107,122,.25);}
+
+/* ===== МОДАЛКА (ИСПРАВЛЕНА) ===== */
 .beta-overlay{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.7);
   backdrop-filter:blur(6px);
   -webkit-backdrop-filter:blur(6px);
   z-index:1000;
-  display:none;
+  display:none; /* Скрыта по умолчанию */
   align-items:center;
   justify-content:center;
   padding:20px;
   opacity:0;
   transition:opacity .2s ease;
 }
-.beta-overlay.open{
-  display:flex;
-  opacity:1;
-}
+.beta-overlay.open{display:flex; opacity:1;}
 .beta-modal{
   width:100%;
-  max-width:360px;
-  background:#0f1420;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:16px;
+  max-width:380px;
+  background:rgba(15,18,25,.95);
+  border:1px solid var(--card-border);
+  border-radius:20px;
   padding:28px 24px;
-  text-align:center;
-  box-shadow:0 30px 80px rgba(0,0,0,.7);
+  box-shadow:0 30px 80px rgba(0,0,0,.8);
   transform:scale(.95);
   transition:transform .25s cubic-bezier(.2,.7,.3,1);
+  position: relative;
+  z-index: 1001;
 }
-.beta-overlay.open .beta-modal{
-  transform:scale(1);
-}
-.beta-icon{
-  font-size:44px;
-  margin-bottom:14px;
-  line-height:1;
+.beta-overlay.open .beta-modal{transform:scale(1);}
+.beta-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
 }
 .beta-title{
-  font-size:20px;
+  font-size:18px;
   font-weight:800;
   color:#fff;
   letter-spacing:-.3px;
-  margin-bottom:10px;
 }
-.beta-text{
-  font-size:14px;
-  color:#8a93a6;
-  line-height:1.55;
-  margin-bottom:22px;
-}
-.beta-modal .btn{
-  width:100%;
-  padding:12px 18px;
-  border-radius:10px;
-  font-size:14px;
-  font-weight:600;
+.beta-close{
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-size:20px;
   cursor:pointer;
-  font-family:inherit;
-  transition:all .2s ease;
+  padding:4px 8px;
+  border-radius:8px;
 }
-.beta-modal .btn-ghost{
-  background:rgba(255,255,255,.06);
-  color:#f4f7fc;
-  border:1px solid rgba(255,255,255,.1);
-}
-.beta-modal .btn-ghost:hover{
-  background:rgba(255,255,255,.1);
-  border-color:rgba(255,255,255,.2);
-}
-
+.beta-close:hover{color:var(--text); background:rgba(255,255,255,.06);}
 </style></head><body>
 <div class="wrap">
 
@@ -276,61 +255,55 @@ body::before{
 
   __MSG__
 
+  <!-- Карточка Email -->
+  <div class="card">
+    <h2><span class="ico">📧</span>Email для уведомлений</h2>
+    <div class="field">
+      <label>Текущий Email</label>
+      <input type="text" value="__EMAIL__" disabled style="opacity:0.7; cursor:not-allowed;">
+    </div>
+    <button type="button" class="btn btn-primary" id="emailBtn">Изменить Email</button>
+  </div>
+
+  <!-- Сменить логин -->
   <form class="card" method="post" action="/change_login">
     <h2><span class="ico">👤</span>Сменить логин</h2>
     <div class="field">
       <label>Текущий пароль</label>
-      <input type="password" name="current_pass" required minlength="4"
-             autocomplete="current-password" placeholder="••••••">
+      <input type="password" name="current_pass" required minlength="4" autocomplete="current-password" placeholder="••••••">
     </div>
     <div class="field">
       <label>Новый логин</label>
-      <input type="text" name="new_login" required minlength="3" maxlength="20"
-             pattern="[A-Za-z0-9_]+" placeholder="3-20, A-Z a-z 0-9 _"
-             autocomplete="username">
+      <input type="text" name="new_login" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" placeholder="3-20, A-Z a-z 0-9 _" autocomplete="username">
     </div>
     <button class="btn btn-primary" type="submit">Сменить логин</button>
   </form>
 
+  <!-- Сменить пароль -->
   <form class="card" method="post" action="/change_password">
     <h2><span class="ico">🔒</span>Сменить пароль</h2>
     <div class="field">
       <label>Текущий пароль</label>
-      <input type="password" name="current_pass" required minlength="4"
-             autocomplete="current-password" placeholder="••••••">
+      <input type="password" name="current_pass" required minlength="4" autocomplete="current-password" placeholder="••••••">
     </div>
     <div class="field">
       <label>Новый пароль</label>
-      <input type="password" name="new_pass" required minlength="4"
-             autocomplete="new-password" placeholder="Мин. 4 символа">
+      <input type="password" name="new_pass" required minlength="4" autocomplete="new-password" placeholder="Мин. 4 символа">
     </div>
     <div class="field">
       <label>Повтори новый пароль</label>
-      <input type="password" name="new_pass2" required minlength="4"
-             autocomplete="new-password" placeholder="Ещё раз">
+      <input type="password" name="new_pass2" required minlength="4" autocomplete="new-password" placeholder="Ещё раз">
     </div>
     <button class="btn btn-primary" type="submit">Сменить пароль</button>
   </form>
 
+  <!-- Бета-тестирование -->
   <div class="card">
     <h2><span class="ico">🧪</span>Бета-тестирование</h2>
     <p style="font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:16px;">
-      Получи ранний доступ к новым функциям и проектам imdown.pro.
+      Прими участие в тестировании и привяжи почту для получения уведомлений.
     </p>
     <button class="btn btn-primary" type="button" id="betaBtn">Принять участие</button>
-  </div>
-
-  <!-- Модалка -->
-  <div class="beta-overlay" id="betaOverlay">
-    <div class="beta-modal">
-      <div class="beta-icon">🚧</div>
-      <div class="beta-title">Пока недоступно</div>
-      <div class="beta-text">
-        Запись на бета-тестирование откроется позже.<br>
-        Следи за обновлениями.
-      </div>
-      <button type="button" class="btn btn-ghost" id="betaClose">Понятно</button>
-    </div>
   </div>
 
   <div class="card">
@@ -341,34 +314,173 @@ body::before{
   </div>
 
 </div>
-<script>
-(function(){
-  var btn = document.getElementById('betaBtn');
-  var overlay = document.getElementById('betaOverlay');
-  var close = document.getElementById('betaClose');
 
-  if (btn && overlay){
-    btn.addEventListener('click', function(){
-      overlay.classList.add('open');
-    });
-  }
-  if (close && overlay){
-    close.addEventListener('click', function(){
-      overlay.classList.remove('open');
-    });
-  }
-  if (overlay){
-    overlay.addEventListener('click', function(e){
-      if (e.target === overlay){
-        overlay.classList.remove('open');
-      }
-    });
-  }
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && overlay){
-      overlay.classList.remove('open');
+<!-- Модалка (скрыта) -->
+<div class="beta-overlay" id="betaOverlay">
+  <div class="beta-modal">
+    <div class="beta-header">
+      <div class="beta-title" id="modalTitle">Привязка Email</div>
+      <button type="button" class="beta-close" id="betaClose">✕</button>
+    </div>
+
+    <!-- Блок "Заявка подана" (только для беты с почтой) -->
+    <div id="alreadyHaveEmail" style="display:none; text-align:center; padding: 10px 0;">
+      <p style="font-size:15px; color:#4ade80; margin-bottom:20px; font-weight:600;">
+        ✅ Заявка подана
+      </p>
+      <p style="font-size:13px; color:var(--muted); line-height:1.5;">
+        Ты уже участвуешь в бета-тестировании. Почта привязана.<br>
+        Следи за обновлениями!
+      </p>
+    </div>
+
+    <!-- Блок формы привязки -->
+    <div id="emailFormArea">
+      <div style="font-size:13px; color:var(--muted); text-align:left; margin-bottom:12px;">
+        Текущий email: <b style="color:var(--text);">__EMAIL__</b>
+      </div>
+
+      <form onsubmit="return handleGetCode(event)" style="display:flex; flex-direction:column; gap:12px; width:100%;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Твой пароль (для подтверждения)</label>
+          <input type="password" id="emailPass" required minlength="4" placeholder="••••••" autocomplete="off">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Новый email</label>
+          <input type="email" id="emailNew" required maxlength="100" placeholder="you@example.com" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:8px;" id="btnGetCode">Получить код</button>
+        <div id="emailError" style="color:#ff6b7a; font-size:12px; text-align:center; display:none;"></div>
+      </form>
+
+      <div style="text-align:center; font-size:12px; color:var(--muted); margin:16px 0;">или введи код</div>
+
+      <form onsubmit="return handleVerifyCode(event)" style="display:flex; flex-direction:column; gap:12px; width:100%;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Код из письма</label>
+          <input type="text" id="emailCode" required maxlength="6" pattern="[0-9]{6}" placeholder="123456" style="text-align:center; font-size:20px; letter-spacing:4px;" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-ghost" style="margin-top:8px;">Подтвердить</button>
+        <div id="codeError" style="color:#ff6b7a; font-size:12px; text-align:center; display:none;"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+var overlay = document.getElementById('betaOverlay');
+var closeBtn = document.getElementById('betaClose');
+var btnBeta = document.getElementById('betaBtn');
+var btnEmail = document.getElementById('emailBtn');
+
+// Проверяем, есть ли уже почта (и не пустая ли она)
+var hasEmail = "__EMAIL__" && "__EMAIL__" !== "—" && "__EMAIL__" !== "";
+
+function openModal(mode) {
+  document.getElementById('alreadyHaveEmail').style.display = 'none';
+  document.getElementById('emailFormArea').style.display = 'block';
+
+  if (mode === 'beta') {
+    if (hasEmail) {
+      document.getElementById('modalTitle').textContent = 'Бета-тестирование';
+      document.getElementById('alreadyHaveEmail').style.display = 'block';
+      document.getElementById('emailFormArea').style.display = 'none';
+    } else {
+      document.getElementById('modalTitle').textContent = 'Привязка Email';
+      document.getElementById('emailPass').value = '';
+      document.getElementById('emailNew').value = '';
+      document.getElementById('emailCode').value = '';
     }
-  });
-})();
+  } else if (mode === 'email') {
+    document.getElementById('modalTitle').textContent = 'Изменить Email';
+    document.getElementById('emailPass').value = '';
+    document.getElementById('emailNew').value = '';
+    document.getElementById('emailCode').value = '';
+  }
+
+  document.getElementById('emailError').style.display = 'none';
+  document.getElementById('codeError').style.display = 'none';
+
+  overlay.classList.add('open');
+}
+
+if (btnBeta) btnBeta.addEventListener('click', () => openModal('beta'));
+if (btnEmail) btnEmail.addEventListener('click', () => openModal('email'));
+if (closeBtn) closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay) overlay.classList.remove('open'); });
+
+async function handleGetCode(e) {
+  e.preventDefault();
+  const pwd = document.getElementById('emailPass').value;
+  const email = document.getElementById('emailNew').value;
+  const btn = document.getElementById('btnGetCode');
+  const errBox = document.getElementById('emailError');
+
+  errBox.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Отправка...';
+
+  const formData = new URLSearchParams();
+  formData.append('current_pass', pwd);
+  formData.append('new_email', email);
+
+  try {
+    const res = await fetch('/change_email', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.ok) {
+      btn.textContent = 'Код отправлен!';
+      let seconds = 60;
+      btn.disabled = true;
+      const interval = setInterval(() => {
+        btn.textContent = `Ждите ${seconds}с...`;
+        seconds--;
+        if (seconds < 0) {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.textContent = 'Получить код';
+        }
+      }, 1000);
+    } else {
+      errBox.textContent = data.error;
+      errBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Получить код';
+    }
+  } catch (err) {
+    errBox.textContent = 'Ошибка сети';
+    errBox.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Получить код';
+  }
+}
+
+async function handleVerifyCode(e) {
+  e.preventDefault();
+  const code = document.getElementById('emailCode').value;
+  const errBox = document.getElementById('codeError');
+
+  errBox.style.display = 'none';
+
+  const formData = new URLSearchParams();
+  formData.append('code', code);
+
+  try {
+    const res = await fetch('/verify_email_code', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.ok) {
+      alert('Почта успешно привязана!');
+      location.reload();
+    } else {
+      errBox.textContent = data.error;
+      errBox.style.display = 'block';
+    }
+  } catch (err) {
+    errBox.textContent = 'Ошибка сети';
+    errBox.style.display = 'block';
+  }
+}
 </script>
 </body></html>

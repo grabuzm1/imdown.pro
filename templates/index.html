@@ -174,7 +174,7 @@ body::before{
   right: -300px;
   width: 280px;
   height: 100vh;
-    background: rgba(15,18,25, 0.95);
+  background: rgba(15,18,25, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: 2000;
@@ -544,21 +544,19 @@ body::before{
   .mobile-menu-btn {
     display: flex;
     position: absolute;
-    right: 20px;      /* Отступ от правого края */
-    top: 26px;        /* Выравнивание по вертикали с логотипом */
+    right: 20px;
+    top: 26px;
   }
   .topnav {
     display: none !important;
   }
-  /* Делаем шапку relative, чтобы кнопка позиционировалась относительно неё */
   .topbar {
     position: relative;
   }
 }
 @media (max-width:640px){
-  @media (max-width: 640px) {
   .wrap{padding:20px 16px 100px}
-  .topbar{margin-bottom:60px; padding: 14px 0;} /* Добавил padding */
+  .topbar{margin-bottom:60px; padding: 14px 0;}
   .hero{padding:10px 0 60px}
   .hero h1{letter-spacing:-2px}
   .hero p{font-size:15px;margin-bottom:28px}
@@ -568,18 +566,9 @@ body::before{
   .foot{grid-template-columns:1fr;gap:28px;margin-top:60px}
 
   .mobile-menu-btn {
-    right: 16px; /* Чуть меньше отступ для узких экранов */
+    right: 16px;
     top: 24px;
   }
-}
-  .topbar{margin-bottom:60px}
-  .hero{padding:10px 0 60px}
-  .hero h1{letter-spacing:-2px}
-  .hero p{font-size:15px;margin-bottom:28px}
-  .grid{grid-template-columns:1fr;gap:12px}
-  .card{padding:20px;min-height:170px}
-  .card:hover,.btn:hover{transform:none}
-  .foot{grid-template-columns:1fr;gap:28px;margin-top:60px}
 }
 
 #cookie-banner{

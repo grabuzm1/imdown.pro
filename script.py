@@ -1,7 +1,7 @@
-import json, os, re, time, hashlib, secrets, threading
+import json, os, re, time, hashlib, secrets, threading, shutil
 from pathlib import Path
-from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Form, Request, UploadFile, File
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import uvicorn
@@ -12,9 +12,16 @@ BASE = Path(__file__).parent
 DB = BASE / "users.json"
 TPL = BASE / "templates"
 STATIC = BASE / "static"
+AVATARS_DIR = STATIC / "avatars"
+AVATARS_DIR.mkdir(parents=True, exist_ok=True) # Создаст папку если нет
+FILES_DIR = BASE / "walldown_files"
 _lock = threading.Lock()
 DAILY_COOLDOWN = 24 * 60 * 60
 OFFLINE_CAP = 8 * 60 * 60
+
+# Лимиты для синхронизации обоев
+SYNC_QUOTA_PER_USER = 500 * 1024 * 1024      # 500 МБ на юзера
+SYNC_MAX_FILE_SIZE = 150 * 1024 * 1024       # 150 МБ на файл
 
 REBIRTH_BASE = 1e15
 REBIRTH_STEP = 5
@@ -23,14 +30,19 @@ SECRET_KEY = "imdown_super_secret_change_me_2026"
 SESSION_MAX_AGE = 60 * 60 * 24 * 30
 COOKIE_NAME = "imdown_session"
 
-# ============ EMAIL (Resend) ============
-RESEND_API_KEY = "re_P55JHmqH_HaJ37ubFYxCturT1j2V9FEDM"  # ← ВСТАВЬ СВОЙ КЛЮЧ
+AVATARS_DIR = BASE / "static" / "avatars"
+AVATARS_DIR.mkdir(parents=True, exist_ok=True)
+
+WALLDOWN_CALLBACK = "http://localhost:8080/callback"
+
+RESEND_API_KEY = "re_P55JHmqH_HaJ37ubFYxCturT1j2V9FEDM"
 RESEND_FROM = "imdown.pro <noreply@imdown.pro>"
 resend.api_key = RESEND_API_KEY
 
 _signer = URLSafeTimedSerializer(SECRET_KEY, salt="session")
 
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
+FILES_DIR.mkdir(exist_ok=True)
 
 
 def make_session(name: str, trusted=None) -> str:
@@ -233,6 +245,7 @@ def send_password_changed_email(to_email: str, name: str):
     """
     return send_email(to_email, subject, email_wrapper("Пароль изменён", body))
 
+
 def send_email_verification(to_email: str, name: str, code: str):
     subject = "Код подтверждения · imdown.pro"
     body = f"""
@@ -244,6 +257,7 @@ def send_email_verification(to_email: str, name: str, code: str):
       <p style="font-size:13px; color:#8a93a6;">Код действителен в течение 15 минут. Если ты этого не делал — просто проигнорируй письмо.</p>
     """
     return send_email(to_email, subject, email_wrapper("Подтверждение Email", body))
+
 
 def rebirth_threshold(rebirths):
     return REBIRTH_BASE * (REBIRTH_STEP ** rebirths)
@@ -273,6 +287,10 @@ def default_user(pw_hash):
         "daily_last": 0,
         "daily_streak": 0,
         "daily_bonus": 0,
+        "walldown_tokens": [],
+        "walldown_sync_enabled": False,
+        "walldown_sync_files": [],
+        "walldown_storage_used": 0,
     }
     for i in SHOP:
         u[f"c_{i['id']}"] = i["base"]
@@ -293,6 +311,10 @@ def migrate(u):
         "last_seen": int(time.time()),
         "game_session": "",
         "daily_last": 0, "daily_streak": 0, "daily_bonus": 0,
+        "walldown_tokens": [],
+        "walldown_sync_enabled": False,
+        "walldown_sync_files": [],
+        "walldown_storage_used": 0,
     }
     for k, v in base_defaults.items():
         if k not in u:
@@ -560,10 +582,34 @@ async def account_page(request: Request, error: str = None, ok: str = None):
     data = load()
     if user not in data:
         return RedirectResponse("/login", status_code=303)
-    u = data[user]
+    u = migrate(data[user])
+    save(data)
+
+    used_mb = round(u.get("walldown_storage_used", 0) / (1024 * 1024), 1)
+    quota_mb = round(SYNC_QUOTA_PER_USER / (1024 * 1024), 0)
+    sync_on = "включена" if u.get("walldown_sync_enabled") else "выключена"
+    files_count = len(u.get("walldown_sync_files", []))
+
+    # Ссылка на аву
+    avatar_url = ""
+    if u.get("avatar_ext"):
+        # Добавляем случайное число, чтобы браузер не кешировал старую аву
+        avatar_url = f"/static/avatars/{user}{u['avatar_ext']}?v={int(time.time())}"
+        print(f"[DEBUG] Аватар найден: {avatar_url}")  # Выведет в консоль сервера
+    else:
+        print(f"[DEBUG] У пользователя {user} нет avatar_ext")
+
     html = read_tpl("account.html")
     html = html.replace("__NAME__", user)
     html = html.replace("__EMAIL__", u.get("email", "") or "—")
+    html = html.replace("__SYNC_STATE__", sync_on)
+    html = html.replace("__SYNC_USED__", f"{used_mb} / {quota_mb:.0f} МБ")
+    html = html.replace("__SYNC_FILES__", str(files_count))
+    html = html.replace("__SYNC_CHECKED__", "checked" if u.get("walldown_sync_enabled") else "")
+
+    # ЗАМЕНА АВАТАРКИ
+    html = html.replace("__AVATAR_URL__", avatar_url)
+
     msg = ""
     if error:
         msg = f'<div class="msg err">{error}</div>'
@@ -571,6 +617,53 @@ async def account_page(request: Request, error: str = None, ok: str = None):
         msg = f'<div class="msg ok">{ok}</div>'
     html = html.replace("__MSG__", msg)
     return html
+
+
+@app.post("/api/user/upload_avatar")
+async def upload_avatar(request: Request, file: UploadFile = File(...)):
+    user, _ = current_user(request)
+    if not user: return {"ok": False, "error": "Не авторизован"}
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in [".png", ".jpg", ".jpeg", ".webp", ".gif"]:
+        return {"ok": False, "error": "Разрешены только картинки"}
+
+    file_path = AVATARS_DIR / f"{user}{ext}"
+
+    # Удаляем старый аватар, если был
+    for old in AVATARS_DIR.glob(f"{user}.*"):
+        try:
+            old.unlink()
+        except:
+            pass
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    data = load()
+    if user in data:
+        data[user]["avatar_ext"] = ext
+        save(data)
+        return {"ok": True, "message": "Аватар обновлен"}
+    return {"ok": False, "error": "Пользователь не найден"}
+
+
+@app.post("/toggle_sync")
+async def toggle_sync(request: Request):
+    user, _ = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    data = load()
+    if user not in data:
+        return RedirectResponse("/login", status_code=303)
+
+    u = migrate(data[user])
+    u["walldown_sync_enabled"] = not u.get("walldown_sync_enabled", False)
+    data[user] = u
+    save(data)
+
+    # Просто возвращаемся на страницу без всяких ?ok=
+    return RedirectResponse("/account", status_code=303)
 
 
 @app.post("/change_login")
@@ -637,8 +730,6 @@ async def change_password(
     return RedirectResponse("/account?ok=Пароль+изменён", status_code=303)
 
 
-# ... (остальные функции оставляем)
-
 @app.post("/change_email")
 async def request_email_change(
         request: Request,
@@ -661,19 +752,16 @@ async def request_email_change(
     if not verify_pass(current_pass, u["pass"]):
         return {"ok": False, "error": "Неверный пароль"}
 
-    # ПРОВЕРКА НА УНИКАЛЬНОСТЬ ПОЧТЫ
     for other_user, other_data in data.items():
         if other_user != user and other_data.get("email", "").lower() == new_email:
             return {"ok": False, "error": "Этот email уже привязан к другому аккаунту"}
 
-    # ЗАЩИТА: 60 секунд
     now = int(time.time())
     last_sent = u.get("email_code_sent_at", 0)
     if now - last_sent < 60:
         left = 60 - (now - last_sent)
         return {"ok": False, "error": f"Подожди {left} сек перед повторной отправкой"}
 
-    # Генерируем новый код
     code = str(secrets.randbelow(900000) + 100000)
     u["email_pending"] = new_email
     u["email_code"] = code
@@ -723,7 +811,6 @@ async def verify_email_code(
         save(data)
         return {"ok": False, "error": "Неверный код"}
 
-    # Успех
     u["email"] = pending
     u["email_pending"] = None
     u["email_code"] = None
@@ -731,6 +818,32 @@ async def verify_email_code(
     save(data)
 
     return {"ok": True, "message": "Почта успешно привязана"}
+
+
+@app.post("/api/user/upload_avatar")
+async def upload_avatar(request: Request, file: UploadFile = File(...)):
+    user, _ = current_user(request)
+    if not user: return {"ok": False, "error": "Не авторизован"}
+
+    # Сохраняем файл
+    ext = Path(file.filename).suffix.lower()
+    if ext not in [".png", ".jpg", ".jpeg", ".webp"]:
+        return {"ok": False, "error": "Только картинки"}
+
+    file_path = AVATARS_DIR / f"{user}{ext}"
+
+    # Удаляем старую аву, если была
+    for old in AVATARS_DIR.glob(f"{user}.*"):
+        old.unlink()
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    data = load()
+    data[user]["avatar_ext"] = ext
+    save(data)
+
+    return {"ok": True, "message": "Аватар обновлен"}
 
 # ============ DOWN GAMES ============
 @app.get("/games", response_class=HTMLResponse)
@@ -745,19 +858,83 @@ async def games_landing(request: Request):
     return read_tpl("games_landing.html")
 
 
+SERVICES = {
+    "downgames": {
+        "title": "DownGames",
+        "icon": "🎮",
+        "desc": "Игровая платформа imdown.pro",
+        "scopes": [
+            ("👤", "Имя пользователя", "Твой ник в системе"),
+            ("🎯", "Игровой прогресс", "Сохранение результатов в играх"),
+        ],
+        "issue_token": False,
+        "redirect": "/downgames",
+    },
+    "walldown": {
+        "title": "WallDown",
+        "icon": "🖥",
+        "desc": "Приложение для живых обоев",
+        "scopes": [
+            ("👤", "Имя пользователя", "Твой ник для отображения в приложении"),
+            ("🎨", "Настройки оформления", "Выбранная тема (Sunset/Midnight)"),
+            ("🚀", "Игровой прогресс", "Очки и достижения (для синхронизации)"),
+        ],
+        "issue_token": True,
+        "redirect": WALLDOWN_CALLBACK,
+    },
+}
+
+
 @app.get("/consent", response_class=HTMLResponse)
-async def consent_page(request: Request, service: str = "downgames"):
+async def consent_page(request: Request, service: str = None):
     user, trusted = current_user(request)
     if not user:
-        return RedirectResponse(f"/login?next=/games", status_code=303)
+        return RedirectResponse(f"/login?next=/consent?service={service or ''}", status_code=303)
     data = load()
     if user not in data:
         return RedirectResponse("/login", status_code=303)
-    if service in trusted:
-        return RedirectResponse("/downgames", status_code=303)
+
+    if not service or service not in SERVICES:
+        return RedirectResponse("/", status_code=303)
+
+    s = SERVICES[service]
+
+    scopes_html = ""
+    for ico, title, desc in s["scopes"]:
+        scopes_html += f'''
+        <div class="scope-row">
+            <span class="ico">{ico}</span>
+            <div class="txt">
+                <b>{title}</b>
+                <span>{desc}</span>
+            </div>
+        </div>
+        '''
+
     html = read_tpl("consent.html")
     html = html.replace("__NAME__", user)
-    html = html.replace("__SERVICE__", service)
+    html = html.replace("__SERVICE_TITLE__", s["title"])
+    html = html.replace("__SERVICE_ICON__", s["icon"])
+    html = html.replace("__SERVICE_DESC__", s["desc"])
+    html = html.replace("__SCOPES__", scopes_html)
+    html = html.replace("__SERVICE_KEY__", service)
+    return html
+
+
+@app.get("/walldown", response_class=HTMLResponse)
+async def walldown_page(request: Request):
+    user, trusted = current_user(request)
+    if not user:
+        return RedirectResponse("/login?next=/walldown", status_code=303)
+    data = load()
+    if user not in data:
+        return RedirectResponse("/login", status_code=303)
+
+    if "walldown" not in trusted:
+        return RedirectResponse("/consent?service=walldown", status_code=303)
+
+    html = read_tpl("walldown.html")
+    html = html.replace("__NAME__", user)
     return html
 
 
@@ -766,9 +943,40 @@ async def consent_allow(request: Request, service: str = Form(...)):
     user, trusted = current_user(request)
     if not user:
         return RedirectResponse("/login", status_code=303)
+
+    data = load()
+    if user not in data:
+        return RedirectResponse("/login", status_code=303)
+
+    if service not in SERVICES:
+        return RedirectResponse("/", status_code=303)
+
     if service not in trusted:
         trusted.append(service)
-    resp = RedirectResponse("/downgames", status_code=303)
+
+    svc = SERVICES[service]
+
+    if svc.get("issue_token"):
+        token = secrets.token_urlsafe(32)
+        u = data[user]
+        tokens = u.get("walldown_tokens", [])
+        tokens.append({
+            "token": token,
+            "created": int(time.time()),
+        })
+        u["walldown_tokens"] = tokens[-5:]
+        data[user] = u
+        save(data)
+
+        resp = RedirectResponse(
+            f"{svc['redirect']}?token={token}",
+            status_code=303,
+        )
+        resp.set_cookie(COOKIE_NAME, make_session(user, trusted),
+                        max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
+        return resp
+
+    resp = RedirectResponse(svc["redirect"], status_code=303)
     resp.set_cookie(COOKIE_NAME, make_session(user, trusted),
                     max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
     return resp
@@ -776,9 +984,192 @@ async def consent_allow(request: Request, service: str = Form(...)):
 
 @app.post("/consent_deny")
 async def consent_deny(request: Request, service: str = Form(...)):
+    user, _ = current_user(request)
+    if service == "walldown":
+        return RedirectResponse("/walldown?denied=1", status_code=303)
     return RedirectResponse("/", status_code=303)
 
 
+# ============ API ДЛЯ ПРИЛОЖЕНИЯ WALLDOWN ============
+def _find_user_by_token(token):
+    data = load()
+    for name, u in data.items():
+        if not isinstance(u, dict):
+            continue
+        for t in u.get("walldown_tokens", []):
+            if t.get("token") == token:
+                return name, u, data
+    return None, None, None
+
+
+@app.get("/api/walldown/me")
+async def walldown_me(request: Request):
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "): return {"ok": False, "error": "no_token"}
+    token = auth[7:].strip()
+    name, u, _ = _find_user_by_token(token)
+    if not u: return {"ok": False, "error": "invalid_token"}
+
+    u = migrate(u)
+
+    # 1. Сначала вычисляем ссылку на аватарку
+    avatar_url = ""
+    if u.get("avatar_ext"):
+        avatar_url = f"http://localhost:8000/static/avatars/{name}{u['avatar_ext']}?t={int(time.time())}"
+
+    # 2. Потом возвращаем словарь
+    return {
+        "ok": True,
+        "name": name,
+        "email": u.get("email", ""),
+        "theme": u.get("theme", "sunset"),
+        "sync_enabled": bool(u.get("walldown_sync_enabled", False)),
+        "avatar_url": avatar_url,  # <--- Тут просто подставляем переменную
+        "storage_used": int(u.get("walldown_storage_used", 0)),
+        "quota": SYNC_QUOTA_PER_USER,
+        "max_file_size": SYNC_MAX_FILE_SIZE
+    }
+
+
+@app.post("/api/walldown/revoke")
+async def walldown_revoke(request: Request):
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return {"ok": False, "error": "no_token"}
+    token = auth[7:].strip()
+    name, u, data = _find_user_by_token(token)
+    if not u:
+        return {"ok": False, "error": "invalid_token"}
+    u["walldown_tokens"] = [t for t in u.get("walldown_tokens", []) if t.get("token") != token]
+    data[name] = u
+    save(data)
+    return {"ok": True}
+
+
+@app.get("/api/walldown/sync")
+async def walldown_sync_get(request: Request):
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return {"ok": False, "error": "no_token"}
+    token = auth[7:].strip()
+    name, u, _ = _find_user_by_token(token)
+    if not u:
+        return {"ok": False, "error": "invalid_token"}
+    if not u.get("walldown_sync_enabled"):
+        return {"ok": False, "error": "sync_disabled"}
+    return {
+        "ok": True,
+        "files": u.get("walldown_sync_files", []),
+        "storage_used": int(u.get("walldown_storage_used", 0)),
+        "quota": SYNC_QUOTA_PER_USER,
+    }
+
+
+@app.post("/api/walldown/upload")
+async def walldown_upload(request: Request, file: UploadFile = File(...)):
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return {"ok": False, "error": "no_token"}
+    token = auth[7:].strip()
+    name, u, data = _find_user_by_token(token)
+    if not u:
+        return {"ok": False, "error": "invalid_token"}
+    if not u.get("walldown_sync_enabled"):
+        return {"ok": False, "error": "sync_disabled"}
+
+    # Проверка размера
+    contents = await file.read()
+    size = len(contents)
+    if size > SYNC_MAX_FILE_SIZE:
+        return {"ok": False, "error": "too_big", "max_size": SYNC_MAX_FILE_SIZE}
+
+    used = int(u.get("walldown_storage_used", 0))
+    if used + size > SYNC_QUOTA_PER_USER:
+        return {"ok": False, "error": "quota_exceeded",
+                "used": used, "quota": SYNC_QUOTA_PER_USER, "file_size": size}
+
+    # Сохраняем файл
+    file_id = secrets.token_hex(16)
+    user_dir = FILES_DIR / name
+    user_dir.mkdir(exist_ok=True)
+    # Сохраняем с оригинальным расширением
+    ext = Path(file.filename).suffix.lower() or ".mp4"
+    file_path = user_dir / f"{file_id}{ext}"
+    with open(file_path, "wb") as f:
+        f.write(contents)
+
+    record = {
+        "id": file_id,
+        "name": file.filename,
+        "size": size,
+        "ext": ext,
+        "added_at": int(time.time()),
+    }
+    files = u.get("walldown_sync_files", [])
+    files.append(record)
+    u["walldown_sync_files"] = files
+    u["walldown_storage_used"] = used + size
+    data[name] = u
+    save(data)
+
+    return {"ok": True, "file": record, "storage_used": u["walldown_storage_used"]}
+
+
+@app.get("/api/walldown/file/{file_id}")
+async def walldown_download_file(file_id: str, request: Request):
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return {"ok": False, "error": "no_token"}
+    token = auth[7:].strip()
+    name, u, _ = _find_user_by_token(token)
+    if not u:
+        return {"ok": False, "error": "invalid_token"}
+
+    record = next((f for f in u.get("walldown_sync_files", []) if f["id"] == file_id), None)
+    if not record:
+        return {"ok": False, "error": "not_found"}
+
+    file_path = FILES_DIR / name / f"{file_id}{record['ext']}"
+    if not file_path.exists():
+        return {"ok": False, "error": "file_missing"}
+
+    return FileResponse(
+        path=str(file_path),
+        filename=record["name"],
+        media_type="application/octet-stream",
+    )
+
+
+@app.delete("/api/walldown/file/{file_id}")
+async def walldown_delete_file(file_id: str, request: Request):
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return {"ok": False, "error": "no_token"}
+    token = auth[7:].strip()
+    name, u, data = _find_user_by_token(token)
+    if not u:
+        return {"ok": False, "error": "invalid_token"}
+
+    record = next((f for f in u.get("walldown_sync_files", []) if f["id"] == file_id), None)
+    if not record:
+        return {"ok": False, "error": "not_found"}
+
+    file_path = FILES_DIR / name / f"{file_id}{record['ext']}"
+    if file_path.exists():
+        try:
+            file_path.unlink()
+        except Exception as e:
+            print(f"[delete] {e}")
+
+    u["walldown_sync_files"] = [f for f in u["walldown_sync_files"] if f["id"] != file_id]
+    u["walldown_storage_used"] = max(0, u.get("walldown_storage_used", 0) - record["size"])
+    data[name] = u
+    save(data)
+
+    return {"ok": True, "storage_used": u["walldown_storage_used"]}
+
+
+# ============ DOWN GAMES (остальное без изменений) ============
 @app.get("/downgames", response_class=HTMLResponse)
 async def downgames(request: Request):
     user, trusted = current_user(request)

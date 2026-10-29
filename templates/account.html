@@ -60,17 +60,35 @@ body::before{
   margin-bottom:28px;
 }
 .header .mark{
-  width:52px;
-  height:52px;
+  width:64px;
+  height:64px;
   margin:0 auto 12px;
-  border-radius:14px;
+  border-radius:50%;
   background:linear-gradient(135deg, var(--accent), var(--accent2), var(--purple));
   display:grid;
   place-items:center;
   font-weight:900;
-  font-size:24px;
+  font-size:28px;
   color:#000;
   box-shadow:0 0 30px rgba(95,240,255,.4);
+  cursor:pointer;
+  background-size:cover;
+  background-position:center;
+  position:relative;
+  overflow:hidden;
+  transition:transform 0.2s ease;
+}
+.header .mark:hover {
+  transform: scale(1.05);
+}
+.header .mark img {
+  display:none;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
 }
 .header h1{
   font-size:24px;
@@ -83,6 +101,17 @@ body::before{
   margin-bottom:4px;
 }
 .header p{color:var(--muted);font-size:13px}
+.change-avatar-btn {
+  display:inline-block;
+  margin-top:8px;
+  font-size:12px;
+  color:var(--accent);
+  cursor:pointer;
+  text-decoration:underline;
+}
+.change-avatar-btn:hover {
+  color:#fff;
+}
 
 .card{
   background:var(--card-bg);
@@ -102,6 +131,8 @@ body::before{
 .card:nth-child(3){animation-delay:.19s}
 .card:nth-child(4){animation-delay:.26s}
 .card:nth-child(5){animation-delay:.33s}
+.card:nth-child(6){animation-delay:.40s}
+.card:nth-child(7){animation-delay:.47s}
 @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
 
 .card h2{
@@ -115,7 +146,6 @@ body::before{
 }
 .card h2 .ico{opacity:.9}
 
-/* Базовые стили для ВСЕХ полей ввода */
 .field{margin-bottom:12px}
 .field label{
   display:block;
@@ -142,7 +172,6 @@ body::before{
 }
 .field input::placeholder{color:#5a6376}
 
-/* Убираем белый фон автозаполнения Chrome */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
@@ -187,7 +216,6 @@ input:-webkit-autofill:focus {
 .msg.ok{color:#4ade80; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.25);}
 .msg.err{color:#ff6b7a; background:rgba(255,107,122,.08); border:1px solid rgba(255,107,122,.25);}
 
-/* ===== МОДАЛКА (ИСПРАВЛЕНА) ===== */
 .beta-overlay{
   position:fixed;
   inset:0;
@@ -195,7 +223,7 @@ input:-webkit-autofill:focus {
   backdrop-filter:blur(6px);
   -webkit-backdrop-filter:blur(6px);
   z-index:1000;
-  display:none; /* Скрыта по умолчанию */
+  display:none;
   align-items:center;
   justify-content:center;
   padding:20px;
@@ -239,6 +267,21 @@ input:-webkit-autofill:focus {
   border-radius:8px;
 }
 .beta-close:hover{color:var(--text); background:rgba(255,255,255,.06);}
+
+.sync-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 12px;
+  background: rgba(0,0,0,.4);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.sync-checkbox input {
+  width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer;
+}
 </style></head><body>
 <div class="wrap">
 
@@ -247,11 +290,18 @@ input:-webkit-autofill:focus {
     <div class="who">Логин: <b>__NAME__</b></div>
   </div>
 
-  <div class="header">
-    <div class="mark">D</div>
+      <div class="header">
+    <div class="mark" id="avatarContainer" style="position: relative; overflow: hidden; cursor: pointer;">
+        <span id="avatarLetter" style="position: relative; z-index: 2;">D</span>
+        <img id="avatarImg" src="__AVATAR_URL__" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+    </div>
     <h1>Аккаунт</h1>
     <p>Управление Down ID</p>
+    <div class="change-avatar-btn" onclick="document.getElementById('avatarInput').click()">Сменить аватар</div>
   </div>
+  <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+
+  <input type="file" id="avatarInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;">
 
   __MSG__
 
@@ -297,6 +347,23 @@ input:-webkit-autofill:focus {
     <button class="btn btn-primary" type="submit">Сменить пароль</button>
   </form>
 
+  <!-- СИНХРОНИЗАЦИЯ WALLDOWN -->
+  <div class="card">
+    <h2><span class="ico">🖥</span>Синхронизация обоев</h2>
+    <p style="font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:16px;">
+      Если включено, обои, которые ты добавляешь в приложение WallDown, будут загружаться в облако и подтягиваться на других устройствах.
+    </p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+      Лимит: <b>__SYNC_USED__</b>, файлов: <b>__SYNC_FILES__</b>.
+    </p>
+    <form method="post" action="/toggle_sync">
+      <label class="sync-checkbox">
+        <input type="checkbox" __SYNC_CHECKED__ onchange="this.form.submit()">
+        <span>Синхронизация <b>__SYNC_STATE__</b></span>
+      </label>
+    </form>
+  </div>
+
   <!-- Бета-тестирование -->
   <div class="card">
     <h2><span class="ico">🧪</span>Бета-тестирование</h2>
@@ -323,7 +390,6 @@ input:-webkit-autofill:focus {
       <button type="button" class="beta-close" id="betaClose">✕</button>
     </div>
 
-    <!-- Блок "Заявка подана" (только для беты с почтой) -->
     <div id="alreadyHaveEmail" style="display:none; text-align:center; padding: 10px 0;">
       <p style="font-size:15px; color:#4ade80; margin-bottom:20px; font-weight:600;">
         ✅ Заявка подана
@@ -334,7 +400,6 @@ input:-webkit-autofill:focus {
       </p>
     </div>
 
-    <!-- Блок формы привязки -->
     <div id="emailFormArea">
       <div style="font-size:13px; color:var(--muted); text-align:left; margin-bottom:12px;">
         Текущий email: <b style="color:var(--text);">__EMAIL__</b>
@@ -373,7 +438,6 @@ var closeBtn = document.getElementById('betaClose');
 var btnBeta = document.getElementById('betaBtn');
 var btnEmail = document.getElementById('emailBtn');
 
-// Проверяем, есть ли уже почта (и не пустая ли она)
 var hasEmail = "__EMAIL__" && "__EMAIL__" !== "—" && "__EMAIL__" !== "";
 
 function openModal(mode) {
@@ -482,5 +546,43 @@ async function handleVerifyCode(e) {
     errBox.style.display = 'block';
   }
 }
+
+// ЛОГИКА АВАТАРКИ
+document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("avatarContainer");
+    const letter = document.getElementById("avatarLetter");
+    const avatarUrl = container.getAttribute("data-avatar");
+
+    // Если ссылка есть и она не пустая (и не дефолтная заглушка) — ставим фон
+    if (avatarUrl && avatarUrl !== "__AVATAR_URL__" && avatarUrl !== "") {
+        container.style.backgroundImage = `url('${avatarUrl}')`;
+        container.style.backgroundSize = "cover";
+        container.style.backgroundPosition = "center";
+        letter.style.display = "none"; // Прячем букву
+    }
+
+    // Клик для загрузки
+    container.addEventListener("click", () => {
+        document.getElementById("avatarInput").click();
+    });
+});
+
+// Автоскрытие сообщений
+document.addEventListener('DOMContentLoaded', () => {
+  const msgBox = document.querySelector('.msg');
+  if (msgBox) {
+    const url = new URL(window.location);
+    if (url.searchParams.has('ok') || url.searchParams.has('error')) {
+      url.searchParams.delete('ok');
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url);
+    }
+    setTimeout(() => {
+      msgBox.style.transition = 'opacity 0.4s ease';
+      msgBox.style.opacity = '0';
+      setTimeout(() => msgBox.remove(), 400);
+    }, 3000);
+  }
+});
 </script>
 </body></html>

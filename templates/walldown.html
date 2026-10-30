@@ -6,11 +6,11 @@
 <title>WallDown · Живые обои</title>
 <style>
 /* ==========================================
-   ТЕМА: VIOLET NEON (Разгруженная версия)
+   ТЕМА: VIOLET NEON
    ========================================== */
 :root {
   --bg: #0f1115;
-  --bg-glow: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+  --bg-glow: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
   --text: #e8ecf1;
   --muted: #8b93a1;
 
@@ -39,7 +39,6 @@ body{
   position: relative;
 }
 
-/* Легкий градиент в углу */
 body::before {
   content: "";
   position: fixed;
@@ -110,7 +109,6 @@ body::before {
 }
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* Правая часть (Абстрактная 3D-сфера) */
 .hero-visual {
   position: relative;
   display: flex; align-items: center; justify-content: center;
@@ -151,7 +149,7 @@ body::before {
   background: rgba(255,255,255,.08); border-color: var(--accent);
 }
 
-/* ============ ФИЧИ (4 в ряд, по центру) ============ */
+/* ============ ФИЧИ ============ */
 .features {
   padding: 60px 0;
   border-top: 1px solid var(--card-border);
@@ -184,7 +182,7 @@ body::before {
 .card:nth-child(4) { animation-delay: .6s; }
 
 .card:hover {
-  background: var(--card-hover); border-color: var(--accent);
+  background: var(--card-hover); border-color: var(--accent); transform: translateY(-4px);
 }
 .card-icon {
   font-size: 28px; margin-bottom: 16px;
@@ -223,6 +221,59 @@ body::before {
 .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
 .step-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
 
+/* ============ ENGINE & FAQ (УПРОЩЕНО) ============ */
+.engine-section {
+  padding: 80px 0;
+  border-top: 1px solid var(--card-border);
+}
+.engine-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+/* Левая колонка: Текст */
+.tech-text h3 {
+  font-size: 24px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px;
+}
+.tech-text p {
+  font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 24px;
+}
+.tech-text .highlight {
+  color: var(--text); font-weight: 600;
+}
+.tech-note {
+  font-size: 12px; color: #5a6376; line-height: 1.5; margin-top: 32px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,0.05);
+}
+
+/* Правая колонка: Простой аккордеон */
+.faq-simple {
+  display: flex; flex-direction: column;
+}
+.faq-simple-item {
+  border-bottom: 1px solid var(--card-border);
+}
+.faq-simple-q {
+  padding: 20px 0;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+}
+.faq-simple-q::after {
+  content: "+"; font-size: 20px; color: var(--accent2); font-weight: 300; transition: transform 0.3s;
+}
+.faq-simple-item.active .faq-simple-q::after {
+  transform: rotate(45deg);
+}
+.faq-simple-a {
+  max-height: 0; opacity: 0; overflow: hidden;
+  font-size: 14px; color: var(--muted); line-height: 1.6;
+  transition: all 0.3s ease;
+}
+.faq-simple-item.active .faq-simple-a {
+  max-height: 200px; opacity: 1; padding-bottom: 20px;
+}
+
 /* ============ ФУТЕР ============ */
 .footer {
   padding: 30px 0; border-top: 1px solid var(--card-border);
@@ -237,6 +288,7 @@ body::before {
   .orb { width: 200px; height: 200px; }
   .grid { grid-template-columns: repeat(2, 1fr); }
   .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .engine-grid { grid-template-columns: 1fr; gap: 40px; }
 }
 @media (max-width: 640px) {
   .nav a:not(.active) { display: none; }
@@ -260,7 +312,7 @@ body::before {
   <div class="hero">
     <div class="hero-content">
       <h1>WallDown</h1>
-      <p>Оживи свой рабочий стол. Установи видео-обои, которые работают прямо под иконками, без тормозов и лишней нагрузки.</p>
+      <p>Оживи свой рабочий стол. Установи видео-обои, которые работают прямо под иконками, с облачной синхронизацией и полной интеграцией с экосистемой Down ID.</p>
       <div class="hero-actions">
         <a href="https://github.com/grabuzm1/imdown.pro/releases/download/v1.0/WallDown_Setup.exe" class="btn btn-primary">
           ⬇ Скачать для Windows
@@ -280,7 +332,7 @@ body::before {
       <div class="card">
         <div class="card-icon">📥</div>
         <div class="card-title">Загрузка с YouTube</div>
-        <div class="card-desc">Работает прямая загрузка по ссылке с YouTube. Вставь ссылку на видео — и оно автоматически скачается и установится как обои.</div>
+        <div class="card-desc">Работает прямая загрузка по ссылке с YouTube. Вставь ссылку — и видео само скачается и установится как обои.</div>
       </div>
       <div class="card">
         <div class="card-icon">🎬</div>
@@ -290,7 +342,7 @@ body::before {
       <div class="card">
         <div class="card-icon">⚡</div>
         <div class="card-title">Работает быстро</div>
-        <div class="card-desc">Встроенный плеер MPV не нагружает процессор, так что обои будут работать даже на слабых ПК.</div>
+        <div class="card-desc">Благодаря связке движка Lively и плеера MPV, обои не нагружают процессор, даже на слабых ПК.</div>
       </div>
       <div class="card">
         <div class="card-icon">🛡</div>
@@ -300,7 +352,6 @@ body::before {
     </div>
   </div>
 
-  <!-- Блок "Как это работает" -->
   <div class="steps">
     <div class="steps-title">Как это работает</div>
     <div class="steps-grid">
@@ -324,6 +375,47 @@ body::before {
         <div class="step-title">Наслаждайся</div>
         <div class="step-desc">Обои появятся под иконками. Всё готово!</div>
       </div>
+    </div>
+  </div>
+
+  <!-- НОВЫЙ БЛОК: ТЕХНОЛОГИИ И FAQ (чистый минимализм) -->
+  <div class="engine-section">
+    <div class="engine-grid">
+
+      <!-- Левая колонка: Просто текст -->
+      <div class="tech-text">
+        <h3>Технологии</h3>
+        <p>WallDown — это кастомный форк, созданный для экосистемы imdown.pro. Мы используем проверенный рендеринг Lively (MIT License), чтобы обои работали стабильно и не нагружали систему.</p>
+
+        <p>В основе лежит плеер <span class="highlight">MPV</span> и движок <span class="highlight">DirectX</span>. Мы добавили к этому свою облачную синхронизацию и авторизацию через <span class="highlight">Down ID</span>.</p>
+
+        <p>В будущем мы планируем выпустить <span class="highlight">собственный движок на базе MPV</span>, чтобы полностью убрать зависимость от сторонних окон и сделать запуск обоев бесшовным.</p>
+
+        <div class="tech-note">
+          * WallDown является независимым проектом и не связан с официальными разработчиками Lively Wallpaper.
+        </div>
+      </div>
+
+      <!-- Правая колонка: Минималистичный аккордеон -->
+      <div class="faq-simple">
+        <div class="faq-simple-item">
+            <div class="faq-simple-q" onclick="this.parentElement.classList.toggle('active')">Почему при первом запуске открывается Lively?</div>
+            <div class="faq-simple-a">При первом запуске Lively инициализирует свои компоненты. Это нормально. После этого WallDown управляет обоями сам, а Lively работает в фоне.</div>
+        </div>
+        <div class="faq-simple-item">
+            <div class="faq-simple-q" onclick="this.parentElement.classList.toggle('active')">Это самостоятельное приложение?</div>
+            <div class="faq-simple-a">Да, это кастомный форк. Мы взяли открытый код Lively и интегрировали его со своей экосистемой (Down ID, облако). Вы получаете мощь движка и удобство нашего интерфейса.</div>
+        </div>
+        <div class="faq-simple-item">
+            <div class="faq-simple-q" onclick="this.parentElement.classList.toggle('active')">Зачем нужна синхронизация?</div>
+            <div class="faq-simple-a">Чтобы не терять обои. Если вы переустановите Windows или сядете за другой ПК, достаточно войти через Down ID — и все ваши видео-обои подтянутся из облака.</div>
+        </div>
+        <div class="faq-simple-item">
+            <div class="faq-simple-q" onclick="this.parentElement.classList.toggle('active')">Какие системные требования?</div>
+            <div class="faq-simple-a">Windows 10/11 (64-bit). Приложение практически не нагружает систему. Рекомендуется установить WebView2 Runtime (обычно уже встроен в Windows 10+).</div>
+        </div>
+      </div>
+
     </div>
   </div>
 

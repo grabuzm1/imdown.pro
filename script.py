@@ -599,6 +599,8 @@ async def account_page(request: Request, error: str = None, ok: str = None):
     else:
         print(f"[DEBUG] У пользователя {user} нет avatar_ext")
 
+    # Буква для заглушки, если нет авы
+    letter = user[0].upper() if user else "U"
     html = read_tpl("account.html")
     html = html.replace("__NAME__", user)
     html = html.replace("__EMAIL__", u.get("email", "") or "—")
@@ -616,6 +618,7 @@ async def account_page(request: Request, error: str = None, ok: str = None):
     elif ok:
         msg = f'<div class="msg ok">{ok}</div>'
     html = html.replace("__MSG__", msg)
+    html = html.replace("__LETTER__", letter)
     return html
 
 
@@ -1012,19 +1015,18 @@ async def walldown_me(request: Request):
 
     u = migrate(u)
 
-    # 1. Сначала вычисляем ссылку на аватарку
+    # Формируем ссылку на аватарку, если она есть
     avatar_url = ""
     if u.get("avatar_ext"):
-        avatar_url = f"http://localhost:8000/static/avatars/{name}{u['avatar_ext']}?t={int(time.time())}"
+        avatar_url = f"https://imdown.pro/static/avatars/{name}{u['avatar_ext']}?t={int(time.time())}"
 
-    # 2. Потом возвращаем словарь
     return {
         "ok": True,
         "name": name,
         "email": u.get("email", ""),
         "theme": u.get("theme", "sunset"),
         "sync_enabled": bool(u.get("walldown_sync_enabled", False)),
-        "avatar_url": avatar_url,  # <--- Тут просто подставляем переменную
+        "avatar_url": avatar_url,  # <--- Вот это нужно
         "storage_used": int(u.get("walldown_storage_used", 0)),
         "quota": SYNC_QUOTA_PER_USER,
         "max_file_size": SYNC_MAX_FILE_SIZE

@@ -149,8 +149,28 @@ body::before{
     <p>Что нового на imdown.pro</p>
   </div>
 
-      <!-- РЕЛИЗ WALLDOWN -->
   <div style="max-width: 820px; margin: 0 auto;">
+
+  <!-- НОВОЕ ОБНОВЛЕНИЕ (ФИКСЫ И YOUTUBE) -->
+  <div class="update">
+    <div class="update-head">
+      <div class="update-title">
+        Исправления и обновление WallDown
+        <span class="update-badge maint">Тех</span>
+      </div>
+      <div class="update-date">30.10.2026</div>
+    </div>
+    <ul class="update-list">
+      <li><b>Вход по Down ID.</b> <span>Устранен баг с зависанием при нажатии «Разрешить». Авторизация в приложении теперь проходит быстро и без ошибок.</span></li>
+      <li><b>Аватарки.</b> <span>Починили загрузку и отображение аватарок в личном кабинете на сайте и в самом приложении.</span></li>
+      <li><b>Скачивание с YouTube.</b> <span>Добавлена кнопка «Скачать с YouTube» — теперь видео качается напрямую и сразу устанавливается как обои.</span></li>
+      <li><b>Локальное сохранение.</b> <span>Исправлен баг, из-за которого список обоев слетал после перезапуска. Теперь всё надежно сохраняется.</span></li>
+      <li><b>Защита от второго экземпляра.</b> <span>Приложение больше не позволяет открыть две копии одновременно (добавлен Mutex).</span></li>
+      <li><b>Тёмная шапка.</b> <span>Интерфейс окна стал монолитнее: системная рамка теперь всегда темная, даже когда окно не в фокусе.</span></li>
+    </ul>
+  </div>
+
+  <!-- РЕЛИЗ WALLDOWN -->
   <div class="update">
     <div class="update-head">
       <div class="update-title">
@@ -168,25 +188,6 @@ body::before{
     </ul>
     <div class="update-note">
       Скачать установщик можно на странице <a href="/walldown" style="color:var(--accent); text-decoration:underline;">WallDown</a>.
-    </div>
-  </div>
-
-  <!-- ФИКС ВХОДА (СКОРО) -->
-  <div class="update">
-    <div class="update-head">
-      <div class="update-title">
-        Исправление входа в WallDown
-        <span class="update-badge soon">Скоро</span>
-      </div>
-      <div class="update-date">Ближайшее время</div>
-    </div>
-    <ul class="update-list">
-      <li><b>Проблема.</b> <span>При нажатии «Разрешить» страница согласия зависает, так как приложение не может получить токен.</span></li>
-      <li><b>Причина.</b> <span>Конфликт портов на локальном сервере приложения.</span></li>
-      <li><b>Решение.</b> <span>Переход на другой порт (8081) и улучшение обработки ошибок.</span></li>
-    </ul>
-    <div class="update-note">
-      Фикс выйдет вместе со следующим обновлением WallDown. Следите за новостями.
     </div>
   </div>
 
@@ -266,6 +267,7 @@ body::before{
     </ul>
   </div>
 
+</div>
 </div>
 
 <!-- Окно аккаунта -->

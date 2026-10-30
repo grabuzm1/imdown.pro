@@ -78,9 +78,7 @@ body::before{
   overflow:hidden;
   transition:transform 0.2s ease;
 }
-.header .mark:hover {
-  transform: scale(1.05);
-}
+.header .mark:hover { transform: scale(1.05); }
 .header .mark img {
   display:none;
   position:absolute;
@@ -109,9 +107,7 @@ body::before{
   cursor:pointer;
   text-decoration:underline;
 }
-.change-avatar-btn:hover {
-  color:#fff;
-}
+.change-avatar-btn:hover { color:#fff; }
 
 .card{
   background:var(--card-bg);
@@ -290,17 +286,20 @@ input:-webkit-autofill:focus {
     <div class="who">Логин: <b>__NAME__</b></div>
   </div>
 
-      <div class="header">
-    <div class="mark" id="avatarContainer" style="position: relative; overflow: hidden; cursor: pointer;">
-        <span id="avatarLetter" style="position: relative; z-index: 2;">D</span>
-        <img id="avatarImg" src="__AVATAR_URL__" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+  <div class="header">
+    <!-- Контейнер аватарки -->
+    <div class="mark" id="avatarContainer" title="Нажми, чтобы сменить аватар">
+        <!-- Буква-заглушка (показывается, если нет картинки) -->
+        <span id="avatarLetter" style="position: relative; z-index: 2;">__LETTER__</span>
+        <!-- Сама картинка -->
+        <img id="avatarImg" src="__AVATAR_URL__" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;" onerror="this.style.display='none'">
     </div>
     <h1>Аккаунт</h1>
     <p>Управление Down ID</p>
-    <div class="change-avatar-btn" onclick="document.getElementById('avatarInput').click()">Сменить аватар</div>
+    <div class="change-avatar-btn" id="btnChangeAvatar">Сменить аватар</div>
   </div>
-  <input type="file" id="avatarInput" accept="image/*" style="display: none;">
 
+  <!-- ОДИН инпут для файла -->
   <input type="file" id="avatarInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;">
 
   __MSG__
@@ -433,6 +432,7 @@ input:-webkit-autofill:focus {
 </div>
 
 <script>
+// ===== МОДАЛКА EMAIL / БЕТА =====
 var overlay = document.getElementById('betaOverlay');
 var closeBtn = document.getElementById('betaClose');
 var btnBeta = document.getElementById('betaBtn');
@@ -547,23 +547,62 @@ async function handleVerifyCode(e) {
   }
 }
 
-// ЛОГИКА АВАТАРКИ
+// ===== ЛОГИКА АВАТАРКИ =====
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("avatarContainer");
+    const img = document.getElementById("avatarImg");
     const letter = document.getElementById("avatarLetter");
-    const avatarUrl = container.getAttribute("data-avatar");
 
-    // Если ссылка есть и она не пустая (и не дефолтная заглушка) — ставим фон
-    if (avatarUrl && avatarUrl !== "__AVATAR_URL__" && avatarUrl !== "") {
-        container.style.backgroundImage = `url('${avatarUrl}')`;
-        container.style.backgroundSize = "cover";
-        container.style.backgroundPosition = "center";
-        letter.style.display = "none"; // Прячем букву
+    // Если src картинки не пустой — показываем её и прячем букву
+    if (img.src && img.src.includes('/static/avatars/') && !img.src.endsWith('undefined')) {
+        img.style.display = "block";
+        letter.style.display = "none";
+    } else {
+        img.style.display = "none";
+        letter.style.display = "block";
     }
 
-    // Клик для загрузки
-    container.addEventListener("click", () => {
-        document.getElementById("avatarInput").click();
+    // Клик по аватарке или кнопке "Сменить аватар"
+    const triggerUpload = () => document.getElementById("avatarInput").click();
+    container.addEventListener("click", triggerUpload);
+    document.getElementById("btnChangeAvatar").addEventListener("click", triggerUpload);
+
+    // Обработка выбора файла
+    document.getElementById("avatarInput").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Меняем текст на "Загрузка..."
+        const btnChange = document.getElementById("btnChangeAvatar");
+        const oldText = btnChange.textContent;
+        btnChange.textContent = "Загрузка...";
+
+        try {
+            const res = await fetch('/api/user/upload_avatar', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                // Добавляем ?t=Date.now(), чтобы браузер не кешировал старую картинку
+                img.src = `/static/avatars/__NAME__${new URL(document.location).searchParams.get('ext') || '.png'}?t=${Date.now()}`;
+                // Сбрасываем экст, так как сервер мог сохранить другой формат (например, jpg)
+                img.src = `/static/avatars/__NAME__.png?t=${Date.now()}`;
+
+                // На всякий случай делаем полный рефреш страницы, чтобы сервер подставил правильный __AVATAR_URL__
+                location.reload();
+            } else {
+                alert("Ошибка загрузки: " + (data.error || "неизвестно"));
+                btnChange.textContent = oldText;
+            }
+        } catch (err) {
+            alert("Ошибка сети при загрузке");
+            btnChange.textContent = oldText;
+        }
     });
 });
 

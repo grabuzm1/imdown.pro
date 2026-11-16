@@ -3,25 +3,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="icon" type="image/png" href="/static/favicon.png">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-<title>Clicker Down 🎃 · imdown.pro</title>
+<title>Clicker Down ❄️ · imdown.pro</title>
 <style>
-body.theme-halloween{
-  --bg:#0f0a0d;
-  --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
-    rgba(255,122,74,.15) 0%,
-    rgba(181,123,255,.10) 40%,
-    transparent 70%);
-  --text:#fdf2ee;
-  --muted:#a89292;
-  --accent:#ff7a4a;
-  --accent2:#b57bff;
-  --gold:#ffd166;
-  --ok:#4ade80;
-  --card-bg:rgba(255,255,255,.035);
-  --card-border:rgba(255,150,120,.10);
-  --score-grad:linear-gradient(180deg,#ffd166 0%, #ff7a4a 55%, #b57bff 100%);
-  --ripple:rgba(255,122,74,.35);
-}
 body.theme-sunset{
   --bg:#1a1014;
   --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
@@ -56,6 +39,23 @@ body.theme-midnight{
   --score-grad:linear-gradient(180deg,#ffffff 0%, #9fe9ee 100%);
   --ripple:rgba(0,224,234,.35);
 }
+body.theme-winter{
+  --bg:#0a1520;
+  --bg-glow:radial-gradient(ellipse 1200px 800px at 50% -10%,
+    rgba(140,200,255,.18) 0%,
+    rgba(200,235,255,.08) 40%,
+    transparent 70%);
+  --text:#eaf4ff;
+  --muted:#8ba3bd;
+  --accent:#7cc4ff;
+  --accent2:#c9e7ff;
+  --gold:#ffe08a;
+  --ok:#7ee8b5;
+  --card-bg:rgba(180,220,255,.05);
+  --card-border:rgba(140,200,255,.14);
+  --score-grad:linear-gradient(180deg,#ffffff 0%, #b8e0ff 55%, #7cc4ff 100%);
+  --ripple:rgba(140,200,255,.4);
+}
 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -74,35 +74,30 @@ body{
   transition:background .4s ease, color .3s ease;
 }
 
-/* ==== КАЧАЮЩИЕСЯ ТЫКВЫ СВЕРХУ ==== */
-.garland{
+/* ==== СНЕГОПАД ==== */
+.snowfall{
   position:fixed;
-  top:0;left:0;right:0;
-  height:90px;
+  inset:0;
   pointer-events:none;
   z-index:1;
+  overflow:hidden;
 }
-.garland-item{
+.snowflake{
   position:absolute;
-  top:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  transform-origin:top center;
-  animation:swing 3s ease-in-out infinite;
+  top:-12px;
+  color:rgba(200,235,255,.85);
+  font-size:14px;
+  filter:drop-shadow(0 0 6px rgba(180,220,255,.5));
+  animation:fall linear infinite;
+  will-change:transform;
 }
-.garland-thread{
-  width:1px;
-  height:40px;
-  background:linear-gradient(180deg, transparent, rgba(255,255,255,.3));
-}
-.garland-emoji{
-  font-size:22px;
-  filter:drop-shadow(0 0 6px rgba(255,122,74,.4));
-}
-@keyframes swing{
-  0%,100%{transform:rotate(-5deg)}
-  50%{transform:rotate(5deg)}
+.snowflake.big{font-size:20px;color:rgba(220,240,255,.95)}
+.snowflake.small{font-size:10px;color:rgba(160,200,235,.7)}
+@keyframes fall{
+  0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0}
+  10%{opacity:1}
+  90%{opacity:1}
+  100%{transform:translateY(110vh) translateX(var(--drift, 30px)) rotate(360deg);opacity:0}
 }
 
 .wrap{max-width:440px;margin:0 auto;position:relative;z-index:2;padding-top:20px}
@@ -171,7 +166,7 @@ body{
 }
 .pumpkin{
   font-size:48px;
-  filter:drop-shadow(0 0 12px rgba(255,122,74,.5));
+  filter:drop-shadow(0 0 12px var(--ripple));
   transition:transform .1s ease;
 }
 .clicker-zone:active .pumpkin{
@@ -195,6 +190,29 @@ body{
 }
 .score-meta b{color:var(--text);font-weight:700}
 .score-meta .gold{color:var(--gold)}
+
+/* ==== СНЕЖИНКА БОНУС ==== */
+.snowflake-bonus{
+  position:absolute;
+  top:8px;right:12px;
+  font-size:11px;
+  color:var(--accent2);
+  background:rgba(140,200,255,.1);
+  border:1px solid var(--card-border);
+  padding:3px 8px;
+  border-radius:999px;
+  z-index:2;
+  display:none;
+  align-items:center;
+  gap:4px;
+  font-weight:700;
+  animation:pulse 2s ease-in-out infinite;
+}
+.snowflake-bonus.active{display:flex}
+@keyframes pulse{
+  0%,100%{opacity:.75;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.05)}
+}
 
 .ripple{
   position:fixed;
@@ -291,6 +309,15 @@ body{
 .item:last-child{border-bottom:none}
 .item.locked{opacity:.4}
 .item.owned .title::after{content:" ✓";color:var(--gold);font-size:11px}
+.item.event-item{position:relative}
+.item.event-item::before{
+  content:"❄️";
+  position:absolute;
+  top:6px;right:-4px;
+  font-size:11px;
+  opacity:.7;
+  pointer-events:none;
+}
 
 .item.clickable{
   cursor:pointer;
@@ -428,7 +455,7 @@ body{
 .swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0;pointer-events:none}
 .swatch.sunset{background:linear-gradient(135deg,#ff7a4a,#ff4a8b)}
 .swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
-.swatch.halloween{background:linear-gradient(135deg,#ff7a4a,#b57bff)}
+.swatch.winter{background:linear-gradient(135deg,#7cc4ff,#e6f3ff)}
 .close-x{
   width:100%;padding:11px;border-radius:9px;
   background:var(--card-bg);
@@ -460,12 +487,10 @@ body{
   .nav{gap:6px}
   .nav .btn-home{padding:5px 10px;font-size:11px}
   .pumpkin{font-size:40px}
-  .garland-emoji{font-size:18px}
-  .garland-thread{height:30px}
 }
-</style></head><body class="theme-halloween">
+</style></head><body class="theme-winter">
 
-<div class="garland" id="garland"></div>
+<div class="snowfall" id="snowfall"></div>
 
 <div class="wrap">
 
@@ -479,14 +504,16 @@ body{
   </div>
 
   <div class="clicker-zone" id="btn">
+    <div class="snowflake-bonus" id="snow-bonus">❄️ +0%</div>
     <div class="pumpkin-wrap">
-      <div class="pumpkin">🎃</div>
+      <div class="pumpkin" id="tap-icon">❄️</div>
     </div>
     <div class="score-value"><span id="s">0</span><span class="score-unit">⚡</span></div>
     <div class="score-meta">
       <span>В сек: <b id="c">0.0</b></span>
       <span class="gold" id="m">+0% / +0%</span>
       <span id="rb-badge" style="display:none">💎 <b id="rb-count">0</b></span>
+      <span id="snow-badge" style="display:none">❄️ <b id="snow-count">0</b></span>
     </div>
   </div>
 
@@ -511,6 +538,7 @@ body{
     <div class="tab active" data-tab="gen">Улучшения</div>
     <div class="tab" data-tab="col">Коллекция</div>
     <div class="tab" data-tab="reb">Перерождение</div>
+    <div class="tab" data-tab="winter">❄️ Зима</div>
   </div>
 
   <div class="shead" id="shop-shead">
@@ -523,6 +551,7 @@ body{
 
   <div class="list" id="list"></div>
   <div id="rebirth-panel" style="display:none"></div>
+  <div id="winter-panel" style="display:none"></div>
 
 </div>
 
@@ -549,29 +578,53 @@ let counts = Object.assign({}, STATE.counts);
 let ownedMap = Object.assign({}, STATE.owned);
 let clickMult = STATE.clickMult || 0;
 let cpsMult = STATE.cpsMult || 0;
-let themeId = 'halloween';
+let themeId = 'winter';
 let buyMode = 1, tab = 'gen';
 let daily = STATE.daily || { can: false, seconds_left: 0, streak: 0, bonus: 0 };
 let rebirths = STATE.rebirths || 0;
 let rebirthBonus = STATE.rebirthBonus || 0;
 let rebirthThreshold = STATE.rebirthThreshold || 1e15;
 
+/* ==== ЗИМНЯЯ ОБНОВА ==== */
+let snowflakes = STATE.snowflakes || 0;
+let snowflakeBonus = STATE.snowflake_bonus || 0;
+let snowProgress = STATE.snow_progress || 0;
+
+const WINTER_SHOP = [
+  { id: 'w_gloves',  icon: '🧤', name: 'Тёплые перчатки',  desc: '+5% к клику',  cost: 50,   bonus: 0.05, type: 'click' },
+  { id: 'w_scarf',   icon: '🧣', name: 'Уютный шарф',      desc: '+10% к CPS',   cost: 150,  bonus: 0.10, type: 'cps'   },
+  { id: 'w_hat',     icon: '🎩', name: 'Шапка-ушанка',     desc: '+15% к клику', cost: 400,  bonus: 0.15, type: 'click' },
+  { id: 'w_cocoa',   icon: '☕', name: 'Горячий шоколад',  desc: '+20% к CPS',   cost: 900,  bonus: 0.20, type: 'cps'   },
+  { id: 'w_tree',    icon: '🎄', name: 'Ёлочка',           desc: '+30% к клику', cost: 2500, bonus: 0.30, type: 'click' },
+  { id: 'w_snowman', icon: '⛄', name: 'Снеговик-помощник', desc: '+50% к CPS',   cost: 7000, bonus: 0.50, type: 'cps'   },
+];
+
+const SNOW_BASE_TAPS = 25;
+const SNOW_GROWTH    = 1.35;
+
+function snowThreshold(n){
+  return Math.floor(SNOW_BASE_TAPS * Math.pow(SNOW_GROWTH, n));
+}
+
 const MAX_BUY = 10000000;
 const $ = id => document.getElementById(id);
 
-/* ==== ГИРЛЯНДА ИЗ ТЫКВ ==== */
+/* ==== СНЕГОПАД ==== */
 (function(){
-  const garland = document.getElementById('garland');
-  const count = window.innerWidth < 600 ? 5 : 6;
+  const box = document.getElementById('snowfall');
+  const count = window.innerWidth < 600 ? 22 : 38;
+  const chars = ['❄','❅','❆','•','✻'];
   for (let i = 0; i < count; i++){
     const el = document.createElement('div');
-    el.className = 'garland-item';
-    const leftPercent = (100 / (count + 1)) * (i + 1);
-    el.style.left = leftPercent + '%';
-    el.style.animationDelay = (i * 0.3) + 's';
-    el.style.animationDuration = (2.8 + Math.random() * 1.2) + 's';
-    el.innerHTML = '<div class="garland-thread"></div><div class="garland-emoji">🎃</div>';
-    garland.appendChild(el);
+    const size = Math.random();
+    el.className = 'snowflake' + (size > 0.75 ? ' big' : (size < 0.3 ? ' small' : ''));
+    el.textContent = chars[Math.floor(Math.random() * chars.length)];
+    el.style.left = Math.random() * 100 + '%';
+    el.style.animationDuration = (6 + Math.random() * 10) + 's';
+    el.style.animationDelay = (-Math.random() * 16) + 's';
+    el.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+    el.style.opacity = (0.4 + Math.random() * 0.6).toFixed(2);
+    box.appendChild(el);
   }
 })();
 
@@ -615,6 +668,8 @@ function maxAffordable(base, mult, ownedQty){
 
 function applyTheme(id){
   document.body.className = 'theme-' + id;
+  const snow = document.getElementById('snowfall');
+  if (snow) snow.style.display = (id === 'winter') ? 'block' : 'none';
 }
 function checkLevelUp(){
   while (totalEarned >= next){
@@ -626,7 +681,7 @@ function checkLevelUp(){
 function renderStats(){
   $('s').textContent = fmt(score);
   $('c').textContent = cps.toFixed(1);
-  $('m').textContent = '+' + Math.round(clickMult*100) + '% / +' + Math.round(cpsMult*100) + '%';
+  $('m').textContent = '+' + Math.round((clickMult + snowflakeBonus) * 100) + '% / +' + Math.round(cpsMult * 100) + '%';
   $('l').textContent = lvl;
   $('ltxt').textContent = fmt(totalEarned) + ' / ' + fmt(next);
   const pct = Math.max(0, Math.min(100, (totalEarned / next) * 100));
@@ -637,15 +692,37 @@ function renderStats(){
   } else {
     $('rb-badge').style.display = 'none';
   }
+  if (snowflakes > 0){
+    $('snow-badge').style.display = 'inline';
+    $('snow-count').textContent = snowflakes;
+  } else {
+    $('snow-badge').style.display = 'none';
+  }
+  const snowBonusEl = $('snow-bonus');
+  if (snowBonusEl){
+    if (snowflakes > 0 && snowflakeBonus > 0){
+      snowBonusEl.classList.add('active');
+      snowBonusEl.textContent = '❄️ +' + Math.round(snowflakeBonus * 100) + '%';
+    } else {
+      snowBonusEl.classList.remove('active');
+    }
+  }
+  const tapIcon = $('tap-icon');
+  if (tapIcon){
+    tapIcon.textContent = themeId === 'winter' ? '❄️' : '⚡';
+  }
 }
 function renderTabs(){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  $('list-title').textContent = tab === 'gen' ? 'Улучшения' : (tab === 'col' ? 'Коллекция' : 'Перерождение');
+  const titles = {gen:'Улучшения', col:'Коллекция', reb:'Перерождение', winter:'❄️ Зимняя коллекция'};
+  $('list-title').textContent = titles[tab] || 'Улучшения';
   $('modes').style.display = tab === 'gen' ? 'flex' : 'none';
   $('shop-shead').style.display = tab === 'reb' ? 'none' : 'flex';
-  $('list').style.display = tab === 'reb' ? 'none' : 'flex';
+  $('list').style.display = (tab === 'reb' || tab === 'winter') ? 'none' : 'flex';
   $('rebirth-panel').style.display = tab === 'reb' ? 'block' : 'none';
+  $('winter-panel').style.display = tab === 'winter' ? 'block' : 'none';
   if (tab === 'reb') renderRebirth();
+  if (tab === 'winter') renderWinter();
 }
 function renderGen(){
   const box = $('list');
@@ -714,7 +791,6 @@ function renderRebirth(){
       '<div class="rebirth-icon">💎</div>' +
       '<div class="rebirth-title">Перерождение</div>' +
       '<div class="rebirth-sub">Сбрось прогресс и стань сильнее</div>' +
-
       '<div class="rebirth-stats">' +
         '<div class="rebirth-stat">' +
           '<div class="label">Перерождений</div>' +
@@ -725,28 +801,103 @@ function renderRebirth(){
           '<div class="value">+' + Math.round(rebirthBonus * 100) + '%</div>' +
         '</div>' +
       '</div>' +
-
       '<div class="rebirth-progress">' +
         '<span>Прогресс</span>' +
         '<span>' + fmt(totalEarned) + ' / ' + fmt(rebirthThreshold) + '</span>' +
       '</div>' +
       '<div class="rebirth-bar"><div class="rebirth-fill" style="width:' + pct + '%"></div></div>' +
-
       '<button class="rebirth-btn" id="rebirth-btn"' + (canReb ? '' : ' disabled') + '>' +
         (canReb ? 'Переродиться → +' + Math.round(nextBonus * 100) + '%' : 'Недостаточно прогресса') +
       '</button>' +
-
       '<div class="rebirth-hint">' +
         'Сбрасывает: очки, юниты, коллекцию, уровень, ежедневку.<br>' +
-        'Оставляет: перерождения, тему, историю.' +
+        'Оставляет: перерождения, снежинки, тему, историю.' +
+      '</div>' +
+    '</div>';
+  const btn = $('rebirth-btn');
+  if (btn && canReb) btn.addEventListener('click', doRebirth);
+}
+
+/* ==== ЗИМНЯЯ ПАНЕЛЬ ==== */
+function renderWinter(){
+  const box = $('winter-panel');
+  const threshold = snowThreshold(snowflakes);
+  const progress = Math.min(snowProgress, threshold);
+  const pct = Math.max(0, Math.min(100, (progress / threshold) * 100));
+
+  let html = '';
+
+  html +=
+    '<div class="rebirth-card" style="margin-bottom:16px">' +
+      '<div class="rebirth-icon">❄️</div>' +
+      '<div class="rebirth-title">Снежинки</div>' +
+      '<div class="rebirth-sub">Каждые ' + threshold + ' тапов — +1 снежинка</div>' +
+      '<div class="rebirth-stats">' +
+        '<div class="rebirth-stat">' +
+          '<div class="label">Снежинок</div>' +
+          '<div class="value gold">' + snowflakes + '</div>' +
+        '</div>' +
+        '<div class="rebirth-stat">' +
+          '<div class="label">Бонус к клику</div>' +
+          '<div class="value">+' + Math.round(snowflakeBonus * 100) + '%</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="rebirth-progress">' +
+        '<span>До следующей</span>' +
+        '<span>' + progress + ' / ' + threshold + ' тапов</span>' +
+      '</div>' +
+      '<div class="rebirth-bar"><div class="rebirth-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="rebirth-hint">' +
+        'Порог растёт с каждой снежинкой (+35%).<br>' +
+        'Снежинки сохраняются при перерождении.' +
       '</div>' +
     '</div>';
 
-  const btn = $('rebirth-btn');
-  if (btn && canReb){
-    btn.addEventListener('click', doRebirth);
-  }
+  html += '<div class="shead" style="margin-top:4px"><h3>Зимняя коллекция</h3></div>';
+  WINTER_SHOP.forEach(item => {
+    const isOwned = !!ownedMap[item.id];
+    const can = score >= item.cost && !isOwned;
+    const cls = 'item event-item' + (isOwned ? ' owned' : '') +
+                (!isOwned && !can ? ' locked' : '') +
+                (can ? ' clickable' : '');
+    let btn;
+    if (isOwned){
+      btn = '<button type="button" class="buy owned-btn" disabled>✓</button>';
+    } else {
+      btn = '<button type="button" class="buy"' + (can ? '' : ' disabled') + '>' +
+              fmt(item.cost) + ' ⚡' +
+            '</button>';
+    }
+    html +=
+      '<div class="' + cls + '" ' +
+        (can ? 'onclick="buyWinter(\'' + item.id + '\',event)"' : '') + '>' +
+        '<div class="icon">' + item.icon + '</div>' +
+        '<div><div class="title">' + item.name + '</div>' +
+        '<div class="sub">' + item.desc + '</div></div>' +
+        btn +
+      '</div>';
+  });
+
+  box.innerHTML = html;
 }
+
+function buyWinter(id, ev){
+  if (ev){ ev.preventDefault(); ev.stopPropagation(); }
+  const item = WINTER_SHOP.find(i => i.id === id);
+  if (!item || ownedMap[id] || score < item.cost) return;
+  score -= item.cost;
+  ownedMap[id] = 1;
+  if (item.type === 'click'){
+    snowflakeBonus += item.bonus;
+  } else {
+    cpsMult += item.bonus;
+    cps *= (1 + item.bonus);
+  }
+  renderStats(); renderWinter(); save();
+  spawnFloat(item.icon + ' ' + item.name, window.innerWidth/2, 200);
+}
+
+window.buyWinter = buyWinter;
 
 window.buyClick = function(id, kind, ev){
   if (ev){ ev.preventDefault(); ev.stopPropagation(); }
@@ -783,7 +934,7 @@ function buyCol(id){
 }
 
 function clickValue(){
-  return Math.max(1, Math.floor(power * (1 + clickMult) * (1 + rebirthBonus)));
+  return Math.max(1, Math.floor(power * (1 + clickMult + snowflakeBonus) * (1 + rebirthBonus)));
 }
 
 const clickerBtn = $('btn');
@@ -793,6 +944,23 @@ function handleTap(x, y){
   score += gain;
   totalEarned += gain;
   checkLevelUp();
+
+  /* прогресс снежинки по тапам */
+  snowProgress++;
+  const threshold = snowThreshold(snowflakes);
+  if (snowProgress >= threshold){
+    snowProgress = 0;
+    snowflakes++;
+    snowflakeBonus += 0.01;
+    spawnFloat('❄️ +1 снежинка', window.innerWidth/2, 160);
+    if (tab === 'winter') renderWinter();
+  } else if (tab === 'winter'){
+    const bar = document.querySelector('#winter-panel .rebirth-fill');
+    const lbl = document.querySelector('#winter-panel .rebirth-progress span:last-child');
+    if (bar) bar.style.width = Math.max(0, Math.min(100, (snowProgress / threshold) * 100)) + '%';
+    if (lbl) lbl.textContent = snowProgress + ' / ' + threshold + ' тапов';
+  }
+
   spawnRipple(x, y);
   spawnFloat('+' + fmt(gain), x, y - 40);
   renderStats();
@@ -837,9 +1005,9 @@ $('modes').addEventListener('click', function(e){
 function openSettings(){
   const box = $('themes'); box.innerHTML = '';
   const themesList = [
-    { id: 'halloween', name: '🎃 Halloween' },
-    { id: 'sunset', name: 'Sunset' },
-    { id: 'midnight', name: 'Midnight' }
+    { id: 'sunset',   name: 'Sunset' },
+    { id: 'midnight', name: 'Midnight' },
+    { id: 'winter',   name: '❄️ Winter' }
   ];
   themesList.forEach(t => {
     const el = document.createElement('div');
@@ -850,6 +1018,7 @@ function openSettings(){
       applyTheme(t.id);
       box.querySelectorAll('.theme-chip').forEach(x => x.classList.remove('active'));
       el.classList.add('active');
+      renderStats();
       save();
     });
     box.appendChild(el);
@@ -935,13 +1104,17 @@ function doRebirth(){
 }
 
 function save(){
-  const payload = {score, power, cps, lvl, next, clickMult, cpsMult,
-                   total_earned: totalEarned, theme: themeId};
+  const payload = {
+    score, power, cps, lvl, next, clickMult, cpsMult,
+    total_earned: totalEarned, theme: themeId,
+    snowflakes, snowflake_bonus: snowflakeBonus, snow_progress: snowProgress
+  };
   SHOP.forEach(i => {
     payload['c_'+i.id] = priceAfter(i.base, i.mult, counts[i.id]||0, 1);
     payload['n_'+i.id] = counts[i.id]||0;
   });
   COLLECTION.forEach(i => { payload['o_'+i.id] = ownedMap[i.id] ? 1 : 0; });
+  WINTER_SHOP.forEach(i => { payload['o_'+i.id] = ownedMap[i.id] ? 1 : 0; });
   const body = new URLSearchParams({
     name: STATE.name, payload: JSON.stringify(payload),
     session_id: STATE.session_id || ""

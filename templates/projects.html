@@ -202,7 +202,7 @@ body::before{
 
 /* ============ HERO ============ */
 .hero{
-  text-align:center; padding:20px 0 100px;
+  text-align:center; padding:20px 0 60px;
   opacity:0; animation:fadeUp .9s ease-out .15s forwards;
 }
 .hero h1{
@@ -270,7 +270,7 @@ body::before{
 .badge{font-weight:600; letter-spacing:.3px}
 .badge-ready{color:var(--accent)}
 .badge-soon{color:var(--muted); opacity:.7}
-.badge-beta{
+.badge-beta, .badge-dev {
   display:inline-block; font-size:10px; font-weight:800; letter-spacing:1.2px;
   text-transform:uppercase; padding:2px 8px; border-radius:6px;
   color:var(--btn-text); background:linear-gradient(135deg, var(--accent), var(--accent2));
@@ -407,13 +407,16 @@ body::before{
       </div>
     </a>
 
+    <!-- НОВАЯ КАРТОЧКА (В РАЗРАБОТКЕ) -->
     <div class="card disabled">
       <div>
-        <div class="card-icon">🧩</div>
-        <div class="card-title">Проект #3</div>
-        <div class="card-desc">Скоро здесь появится что-то новое.</div>
+        <div class="card-icon">🚀</div>
+        <div class="card-title">Новый проект <span class="badge-dev">dev</span></div>
+        <div class="card-desc">Анонс совсем скоро. Релиз запланирован до конца месяца!</div>
       </div>
-      <div class="card-foot"><span class="badge badge-soon">В разработке</span></div>
+      <div class="card-foot">
+        <span class="badge badge-soon" style="color:var(--accent); opacity:1;">Релиз скоро</span>
+      </div>
     </div>
 
     <div class="card disabled">

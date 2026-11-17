@@ -99,6 +99,9 @@ body::before{
 .update:nth-child(3){animation-delay:.36s}
 .update:nth-child(4){animation-delay:.44s}
 .update:nth-child(5){animation-delay:.52s}
+.update:nth-child(6){animation-delay:.6s}
+.update:nth-child(7){animation-delay:.68s}
+.update:nth-child(8){animation-delay:.76s}
 .update::before{ content:""; position:absolute; left:18px; top:32px; width:12px; height:12px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent2); }
 .update::after{ content:""; position:absolute; left:23px; top:50px; bottom:24px; width:2px; background:linear-gradient(180deg, var(--accent), transparent); opacity:.35; }
 .update:last-child::after{display:none}
@@ -120,7 +123,7 @@ body::before{
 .update-note{ margin-top:16px; padding:12px 16px; border-radius:10px; background:rgba(255,255,255,.03); border-left:3px solid var(--accent); font-size:13px; color:var(--muted); line-height:1.5; }
 
 @media (max-width:640px){
-  .wrap{padding:20px 16px 80px}
+  .wrap{padding:20px 16px}
   .topbar{margin-bottom:60px}
   .topnav > a{padding:6px 10px;font-size:13px}
   .topnav > a:not(.nav-plain){display:none}
@@ -129,7 +132,8 @@ body::before{
   .update::after{left:19px;top:42px;bottom:20px}
   .update-title{font-size:18px}
 }
-</style></head><body class="theme-sunset">
+</style></head>
+<body class="theme-sunset">
 
 <div class="wrap">
 
@@ -150,6 +154,24 @@ body::before{
   </div>
 
   <div style="max-width: 820px; margin: 0 auto;">
+
+  <!-- НОВОЕ ОБНОВЛЕНИЕ -->
+  <div class="update">
+    <div class="update-head">
+      <div class="update-title">
+        Зимнее обновление
+        <span class="update-badge big">Big</span>
+      </div>
+      <div class="update-date">17.11.2026</div>
+    </div>
+    <ul class="update-list">
+      <li><b>Зимнее обновление Clicker Down.</b> <span>Добавили зимнюю атмосферу, сезонное оформление и праздничные улучшения в игре.</span></li>
+      <li><b>Зимний дизайн сайта.</b> <span>Обновили визуальный стиль площадок imdown.pro к зимнему сезону.</span></li>
+      <li><b>Фикс багов.</b> <span>Устранили известные ошибки и повысили общую стабильность работы проектов.</span></li>
+      <li><b>Технические обновления.</b> <span>Оптимизировали внутренние сервисы, обновили серверную часть и ускорили загрузку.</span></li>
+      <li><b>Новый проект на основе DownGames.</b> <span>Запустили разработку следующей игры на базе платформы DownGames.</span></li>
+    </ul>
+  </div>
 
   <!-- СВЕЖЕЕ ОБНОВЛЕНИЕ (RED EDITION) -->
   <div class="update">
@@ -207,7 +229,6 @@ body::before{
       Скачать установщик можно на странице <a href="/walldown" style="color:var(--accent); text-decoration:underline;">WallDown</a>.
     </div>
   </div>
-
   <!-- Clicker Down -->
   <div class="update">
     <div class="update-head">

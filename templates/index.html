@@ -49,6 +49,31 @@ body{
   -moz-osx-font-smoothing:grayscale;
   transition:background .4s ease, color .3s ease;
 }
+
+/* ============ ФОНОВОЕ ВИДЕО ============ */
+.bg-video-wrap {
+  position: fixed;
+  top: -50px; left: -50px;
+  width: calc(100vw + 100px); height: calc(100vh + 100px);
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+  will-change: transform;
+}
+.bg-video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bg-video-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10,15,25,0.9) 0%, rgba(10,15,25,0.4) 20%, rgba(10,15,25,0.6) 80%, rgba(10,15,25,1) 100%),
+    radial-gradient(circle at center, transparent 0%, rgba(10,15,25,0.5) 100%);
+}
+
 body::before{
   content:"";
   position:fixed;
@@ -60,6 +85,7 @@ body::before{
   z-index:-1;
   pointer-events:none;
   transition:background .5s ease;
+  mix-blend-mode: screen;
 }
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -76,7 +102,7 @@ body::before{
 /* ============ ШАПКА ============ */
 .topbar{
   display:flex; justify-content:space-between; align-items:center;
-  margin-bottom:80px; padding:14px 0;
+  margin-bottom:20px; padding:14px 0;
   opacity:0; animation:fadeUp .7s ease-out .05s forwards;
 }
 .brand{
@@ -108,6 +134,43 @@ body::before{
   font-weight:500; padding:8px 14px; cursor:pointer; transition:color .2s ease;
 }
 .user-chip:hover{color:var(--text)}
+
+/* ============ АДМИН-БАННЕР ============ */
+/* ============ АДМИН-БАННЕР ============ */
+.admin-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.admin-banner::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: skewX(-20deg);
+  animation: shine 4s infinite;
+}
+@keyframes shine {
+  100% { left: 100%; }
+}
+.admin-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
 
 /* ============ БУРГЕР МЕНЮ ============ */
 .mobile-menu-btn {
@@ -160,7 +223,8 @@ body::before{
 }
 .acc-overlay.open{display:flex}
 .acc-modal{
-  width:100%; max-width:380px; background:#1a1f28;
+  width:100%; max-width:380px; background:rgba(20, 25, 35, 0.85);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
   border:1px solid var(--card-border); border-radius:16px; padding:24px;
   box-shadow:0 30px 80px rgba(0,0,0,.7); animation:popInModal .25s ease-out;
 }
@@ -180,20 +244,20 @@ body::before{
 .acc-link{
   display:flex; align-items:center; width:100%; padding:12px 14px;
   border-radius:10px; color:var(--text); text-decoration:none; font-size:14px;
-  font-weight:500; background:rgba(255,255,255,.04); border:1px solid var(--card-border);
+  font-weight:500; background:rgba(255,255,255,.05); border:1px solid var(--card-border);
   cursor:pointer; transition:all .2s ease; font-family:inherit; margin-bottom:8px;
 }
-.acc-link:hover{background:rgba(255,255,255,.08); border-color:var(--card-border-hover);}
+.acc-link:hover{background:rgba(255,255,255,.1); border-color:var(--card-border-hover);}
 .acc-link.danger{color:#ff6b7a}
-.acc-link.danger:hover{background:rgba(255,107,122,.08); border-color:rgba(255,107,122,.3)}
+.acc-link.danger:hover{background:rgba(255,107,122,.1); border-color:rgba(255,107,122,.3)}
 .theme-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
 .theme-btn{
   display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:14px 12px; border-radius:10px; background:rgba(255,255,255,.04);
+  padding:14px 12px; border-radius:10px; background:rgba(255,255,255,.05);
   border:2px solid transparent; color:var(--text); font-family:inherit;
   font-size:13px; font-weight:600; cursor:pointer; transition:all .2s ease;
 }
-.theme-btn:hover{background:rgba(255,255,255,.08)}
+.theme-btn:hover{background:rgba(255,255,255,.1)}
 .theme-btn.active{border-color:var(--accent)}
 .swatch{width:16px; height:16px; border-radius:50%; pointer-events:none;}
 .swatch.midnight{background:linear-gradient(135deg,#00ADB5,#00e0ea)}
@@ -211,10 +275,10 @@ body::before{
   color:transparent; display:inline-block; cursor:default; user-select:none;
   transform-style:preserve-3d; transition:transform .4s cubic-bezier(.2,.7,.3,1);
   will-change:transform;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 .hero h1:hover{transform:perspective(800px) rotateX(var(--rx,0)) rotateY(var(--ry,0)) scale(1.02);}
-.hero p{font-size:17px; color:var(--muted); line-height:1.6; max-width:600px; margin:0 auto 32px;}
-.hero p b{color:var(--text); font-weight:700;}
+.hero p{font-size:17px; color:var(--text); opacity:0.9; line-height:1.6; max-width:600px; margin:0 auto 32px; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
 .hero-actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
 
 /* ============ КНОПКИ ============ */
@@ -223,8 +287,8 @@ body::before{
   font-weight:600; text-decoration:none; transition:all .25s ease;
   border:1px solid transparent; cursor:pointer; font-family:inherit;
 }
-.btn-ghost{background:rgba(255,255,255,.04); border:1px solid var(--card-border); color:var(--text);}
-.btn-ghost:hover{background:var(--card-hover); border-color:var(--card-border-hover); transform:translateY(-2px);}
+.btn-ghost{background:rgba(20, 25, 35, 0.5); backdrop-filter:blur(10px); border:1px solid var(--card-border); color:var(--text);}
+.btn-ghost:hover{background:rgba(255,255,255,.1); border-color:var(--card-border-hover); transform:translateY(-2px);}
 
 .section-head{
   display:flex; justify-content:space-between; align-items:baseline;
@@ -232,10 +296,10 @@ body::before{
 }
 .section-title{
   font-size:13px; font-weight:700; letter-spacing:2.5px;
-  text-transform:uppercase; color:var(--muted);
+  text-transform:uppercase; color:var(--text); text-shadow: 0 2px 5px rgba(0,0,0,0.8);
 }
-.section-link{font-size:13px; color:var(--muted); text-decoration:none; transition:color .15s ease;}
-.section-link:hover{color:var(--text)}
+.section-link{font-size:13px; color:var(--text); opacity:0.8; text-decoration:none; transition:all .15s ease; text-shadow: 0 2px 5px rgba(0,0,0,0.8);}
+.section-link:hover{opacity:1; color:var(--accent)}
 
 /* ============ СЕТКА КАРТОЧЕК ============ */
 .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;}
@@ -248,6 +312,7 @@ body::before{
   transform-style:preserve-3d; transition:transform .4s cubic-bezier(.2,.7,.3,1),
              border-color .2s ease, background .2s ease, box-shadow .4s ease;
   will-change:transform;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 .card::after{
   content:""; position:absolute; inset:0; border-radius:var(--radius);
@@ -257,7 +322,7 @@ body::before{
 }
 .card:hover{
   transform:translateY(-5px) rotateX(var(--rx,0)) rotateY(var(--ry,0));
-  box-shadow:0 20px 50px var(--card-glow), 0 10px 20px rgba(0,0,0,.5);
+  box-shadow:0 20px 50px var(--card-glow), 0 10px 20px rgba(0,0,0,.6);
   background:var(--card-hover); border-color:var(--card-border-hover);
 }
 .card:hover::after{opacity:1}
@@ -269,7 +334,7 @@ body::before{
 .badge{font-weight:600; letter-spacing:.3px}
 .badge-ready{color:var(--accent)}
 .badge-soon{color:var(--muted); opacity:.7}
-.badge-beta{
+.badge-beta, .badge-dev {
   display:inline-block; font-size:10px; font-weight:800; letter-spacing:1.2px;
   text-transform:uppercase; padding:2px 8px; border-radius:6px;
   color:var(--btn-text); background:linear-gradient(135deg, var(--accent), var(--accent2));
@@ -277,14 +342,15 @@ body::before{
 }
 .arrow{color:var(--accent); font-size:13px; opacity:.9}
 
-.card.disabled{cursor:not-allowed; opacity:.5}
-.card.disabled:hover{transform:none; background:var(--card-bg); box-shadow:none; border-color:var(--card-border);}
+.card.disabled{cursor:not-allowed; opacity:.6}
+.card.disabled:hover{transform:none; background:var(--card-bg); box-shadow:0 10px 30px rgba(0,0,0,0.3); border-color:var(--card-border);}
 .card.disabled::after{opacity:0}
 
 .foot{
-  margin-top:100px; padding-top:40px; border-top:1px solid var(--card-border);
+  margin-top:100px; padding-top:40px; border-top:1px solid rgba(255,255,255,0.1);
   display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:40px;
   opacity:0; animation:fadeUp 1s ease-out .5s forwards;
+  position: relative;
 }
 .foot-brand h4{
   font-size:16px; font-weight:700; margin-bottom:10px;
@@ -301,7 +367,7 @@ body::before{
 }
 .foot-col a:hover{opacity:1; color:var(--accent)}
 .foot-bottom{
-  margin-top:60px; padding-top:24px; border-top:1px solid var(--card-border);
+  margin-top:60px; padding-top:24px; border-top:1px solid rgba(255,255,255,0.1);
   text-align:center; color:var(--muted); font-size:12px; opacity:.7;
 }
 
@@ -322,6 +388,8 @@ body::before{
   .card:hover,.btn:hover{transform:none}
   .foot{grid-template-columns:1fr; gap:28px; margin-top:60px}
   .mobile-menu-btn { right: 16px; top: 24px; }
+  .bg-video-wrap { display: none; }
+  body { background: var(--bg) !important; }
 }
 
 #cookie-banner{
@@ -339,6 +407,11 @@ body::before{
   font-weight:700; font-size:13px; cursor:pointer; font-family:inherit;
 }
 </style></head><body class="theme-sunset">
+
+<!-- Фоновое видео -->
+<div class="bg-video-wrap" id="bgVideoWrap">
+  <video src="/static/videos/winter-bg.mp4" autoplay loop muted playsinline></video>
+</div>
 
 <!-- Бургер меню -->
 <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Меню">
@@ -374,6 +447,9 @@ body::before{
     </div>
   </div>
 
+  <!-- СЮДА ВСТАВЛЯЕТСЯ БАННЕР ИЗ АДМИНКИ -->
+  __BANNER__
+
   <div class="hero">
     <h1>Hello, world!</h1>
     <p>
@@ -403,7 +479,6 @@ body::before{
       </div>
     </a>
 
-    <!-- КАРТОЧКА WALLDOWN -->
     <a class="card" href="/walldown">
       <div>
         <div class="card-icon">🖥</div>
@@ -418,11 +493,13 @@ body::before{
 
     <div class="card disabled">
       <div>
-        <div class="card-icon">🧩</div>
-        <div class="card-title">Проект #3</div>
-        <div class="card-desc">Скоро здесь появится что-то новое.</div>
+        <div class="card-icon">🚀</div>
+        <div class="card-title">Новый проект <span class="badge-dev">dev</span></div>
+        <div class="card-desc">Анонс совсем скоро. Релиз запланирован до конца месяца!</div>
       </div>
-      <div class="card-foot"><span class="badge badge-soon">В разработке</span></div>
+      <div class="card-foot">
+        <span class="badge badge-soon" style="color:var(--accent); opacity:1;">Релиз скоро</span>
+      </div>
     </div>
 
   </div>
@@ -566,6 +643,16 @@ body::before{
       });
     })(cards[i]);
   }
+})();
+
+/* Параллакс для видео */
+(function(){
+  var videoWrap = document.getElementById('bgVideoWrap');
+  if (!videoWrap) return;
+  window.addEventListener('scroll', function(){
+    var scroll = window.scrollY;
+    videoWrap.style.transform = 'translateY(' + (scroll * 0.15) + 'px)';
+  }, {passive: true});
 })();
 
 /* Бургер меню */

@@ -90,7 +90,10 @@ body{
   filter:drop-shadow(0 0 6px rgba(180,220,255,.5));
   animation:fall linear infinite;
   will-change:transform;
+  opacity:0;
+  transition:opacity .8s ease;
 }
+.snowflake.on{opacity:1}
 .snowflake.big{font-size:20px;color:rgba(220,240,255,.95)}
 .snowflake.small{font-size:10px;color:rgba(160,200,235,.7)}
 @keyframes fall{
@@ -585,7 +588,7 @@ let rebirths = STATE.rebirths || 0;
 let rebirthBonus = STATE.rebirthBonus || 0;
 let rebirthThreshold = STATE.rebirthThreshold || 1e15;
 
-/* ==== ЗИМНЯЯ ОБНОВА ==== */
+// ЗИМНЯЯ ОБНОВА
 let snowflakes = STATE.snowflakes || 0;
 let snowflakeBonus = STATE.snowflake_bonus || 0;
 let snowProgress = STATE.snow_progress || 0;
@@ -601,47 +604,62 @@ const WINTER_SHOP = [
 
 const SNOW_BASE_TAPS = 25;
 const SNOW_GROWTH    = 1.35;
+const SNOWFALL_PER_SNOWFLAKE = 4;
+const SNOWFALL_LIMIT_DESKTOP = 120;
+const SNOWFALL_LIMIT_MOBILE  = 80;
 
-function snowThreshold(n){
-  return Math.floor(SNOW_BASE_TAPS * Math.pow(SNOW_GROWTH, n));
-}
+function snowThreshold(n){ return Math.floor(SNOW_BASE_TAPS * Math.pow(SNOW_GROWTH, n)); }
 
 const MAX_BUY = 10000000;
 const $ = id => document.getElementById(id);
 
-/* ==== СНЕГОПАД ==== */
-(function(){
+const SNOW_CHARS = ['❄','❅','❆','•','✻'];
+function createSnowflakeEl(){
+  const el = document.createElement('div');
+  const size = Math.random();
+  el.className = 'snowflake' + (size > 0.75 ? ' big' : (size < 0.3 ? ' small' : ''));
+  el.textContent = SNOW_CHARS[Math.floor(Math.random() * SNOW_CHARS.length)];
+  el.style.left = Math.random() * 100 + '%';
+  el.style.animationDuration = (6 + Math.random() * 10) + 's';
+  el.style.animationDelay = (-Math.random() * 16) + 's';
+  el.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+  return el;
+}
+function snowfallTargetCount(){
+  if (snowflakes <= 0) return 0;
+  const limit = window.innerWidth < 600 ? SNOWFALL_LIMIT_MOBILE : SNOWFALL_LIMIT_DESKTOP;
+  return Math.min(snowflakes * SNOWFALL_PER_SNOWFLAKE, limit);
+}
+function syncSnowfall(){
   const box = document.getElementById('snowfall');
-  const count = window.innerWidth < 600 ? 22 : 38;
-  const chars = ['❄','❅','❆','•','✻'];
-  for (let i = 0; i < count; i++){
-    const el = document.createElement('div');
-    const size = Math.random();
-    el.className = 'snowflake' + (size > 0.75 ? ' big' : (size < 0.3 ? ' small' : ''));
-    el.textContent = chars[Math.floor(Math.random() * chars.length)];
-    el.style.left = Math.random() * 100 + '%';
-    el.style.animationDuration = (6 + Math.random() * 10) + 's';
-    el.style.animationDelay = (-Math.random() * 16) + 's';
-    el.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
-    el.style.opacity = (0.4 + Math.random() * 0.6).toFixed(2);
-    box.appendChild(el);
+  if (!box) return;
+  if (themeId !== 'winter') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const target = snowfallTargetCount();
+  const current = box.children.length;
+  if (target > current){
+    for (let i = current; i < target; i++){
+      const el = createSnowflakeEl(); box.appendChild(el);
+      requestAnimationFrame(() => el.classList.add('on'));
+    }
+  } else if (target < current){
+    for (let i = current - 1; i >= target; i--){
+      const el = box.children[i]; if (!el) continue;
+      el.classList.remove('on'); setTimeout(() => el.remove(), 400);
+    }
   }
-})();
+}
 
 const fmt = n => {
-  if (!isFinite(n)) n = 0;
-  n = Math.floor(n);
-  const u = [[1e33,'Dc'],[1e30,'No'],[1e27,'Oc'],[1e24,'Sp'],[1e21,'Sx'],
-             [1e18,'Qi'],[1e15,'Q'],[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];
+  if (!isFinite(n)) n = 0; n = Math.floor(n);
+  const u = [[1e33,'Dc'],[1e30,'No'],[1e27,'Oc'],[1e24,'Sp'],[1e21,'Sx'],[1e18,'Qi'],[1e15,'Q'],[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];
   for (let i=0;i<u.length;i++) if (n >= u[i][0]) return (n/u[i][0]).toFixed(2)+u[i][1];
   return String(n);
 };
 function fmtTime(sec){
   sec = Math.floor(sec);
   const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
-  if (h>0) return h+'ч '+m+'м';
-  if (m>0) return m+'м '+s+'с';
-  return s+'с';
+  if (h>0) return h+'ч '+m+'м'; if (m>0) return m+'м '+s+'с'; return s+'с';
 }
 function priceAfter(base, mult, ownedQty, qty){
   if (qty<=0) return 0;
@@ -654,13 +672,8 @@ function maxAffordable(base, mult, ownedQty){
   if (score < Math.floor(p0)) return {qty:0,total:0};
   let qty;
   if (Math.abs(mult-1)<1e-9) qty = Math.floor(score/p0);
-  else {
-    const r = 1 + (score*(mult-1))/p0;
-    if (r<=0) return {qty:0,total:0};
-    qty = Math.floor(Math.log(r)/Math.log(mult));
-  }
-  if (qty<0) qty=0;
-  if (qty>MAX_BUY) qty=MAX_BUY;
+  else { const r = 1 + (score*(mult-1))/p0; if (r<=0) return {qty:0,total:0}; qty = Math.floor(Math.log(r)/Math.log(mult)); }
+  if (qty<0) qty=0; if (qty>MAX_BUY) qty=MAX_BUY;
   while (qty>0 && priceAfter(base,mult,ownedQty,qty)>score) qty--;
   while (qty<MAX_BUY && priceAfter(base,mult,ownedQty,qty+1)<=score) qty++;
   return {qty:qty, total: priceAfter(base,mult,ownedQty,qty)};
@@ -668,49 +681,25 @@ function maxAffordable(base, mult, ownedQty){
 
 function applyTheme(id){
   document.body.className = 'theme-' + id;
-  const snow = document.getElementById('snowfall');
-  if (snow) snow.style.display = (id === 'winter') ? 'block' : 'none';
+  syncSnowfall();
 }
 function checkLevelUp(){
-  while (totalEarned >= next){
-    lvl++;
-    power = Math.floor(lvl * lvl * 1000);
-    next = Math.floor(next * 1.5);
-  }
+  while (totalEarned >= next){ lvl++; power = Math.floor(lvl * lvl * 1000); next = Math.floor(next * 1.5); }
 }
 function renderStats(){
-  $('s').textContent = fmt(score);
-  $('c').textContent = cps.toFixed(1);
+  $('s').textContent = fmt(score); $('c').textContent = cps.toFixed(1);
   $('m').textContent = '+' + Math.round((clickMult + snowflakeBonus) * 100) + '% / +' + Math.round(cpsMult * 100) + '%';
-  $('l').textContent = lvl;
-  $('ltxt').textContent = fmt(totalEarned) + ' / ' + fmt(next);
-  const pct = Math.max(0, Math.min(100, (totalEarned / next) * 100));
-  $('bar').style.width = pct + '%';
-  if (rebirths > 0){
-    $('rb-badge').style.display = 'inline';
-    $('rb-count').textContent = rebirths;
-  } else {
-    $('rb-badge').style.display = 'none';
-  }
-  if (snowflakes > 0){
-    $('snow-badge').style.display = 'inline';
-    $('snow-count').textContent = snowflakes;
-  } else {
-    $('snow-badge').style.display = 'none';
-  }
+  $('l').textContent = lvl; $('ltxt').textContent = fmt(totalEarned) + ' / ' + fmt(next);
+  $('bar').style.width = Math.max(0, Math.min(100, (totalEarned / next) * 100)) + '%';
+  if (rebirths > 0){ $('rb-badge').style.display = 'inline'; $('rb-count').textContent = rebirths; } else { $('rb-badge').style.display = 'none'; }
+  if (snowflakes > 0){ $('snow-badge').style.display = 'inline'; $('snow-count').textContent = snowflakes; } else { $('snow-badge').style.display = 'none'; }
   const snowBonusEl = $('snow-bonus');
   if (snowBonusEl){
-    if (snowflakes > 0 && snowflakeBonus > 0){
-      snowBonusEl.classList.add('active');
-      snowBonusEl.textContent = '❄️ +' + Math.round(snowflakeBonus * 100) + '%';
-    } else {
-      snowBonusEl.classList.remove('active');
-    }
+    if (snowflakes > 0 && snowflakeBonus > 0){ snowBonusEl.classList.add('active'); snowBonusEl.textContent = '❄️ +' + Math.round(snowflakeBonus * 100) + '%'; }
+    else { snowBonusEl.classList.remove('active'); }
   }
   const tapIcon = $('tap-icon');
-  if (tapIcon){
-    tapIcon.textContent = themeId === 'winter' ? '❄️' : '⚡';
-  }
+  if (tapIcon) tapIcon.textContent = themeId === 'winter' ? '❄️' : '⚡';
 }
 function renderTabs(){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
@@ -721,163 +710,80 @@ function renderTabs(){
   $('list').style.display = (tab === 'reb' || tab === 'winter') ? 'none' : 'flex';
   $('rebirth-panel').style.display = tab === 'reb' ? 'block' : 'none';
   $('winter-panel').style.display = tab === 'winter' ? 'block' : 'none';
-  if (tab === 'reb') renderRebirth();
-  if (tab === 'winter') renderWinter();
+  if (tab === 'reb') renderRebirth(); if (tab === 'winter') renderWinter();
 }
 function renderGen(){
-  const box = $('list');
-  let html = '';
+  const box = $('list'); let html = '';
   SHOP.forEach(item => {
     const qty = counts[item.id] || 0;
     const price = priceAfter(item.base, item.mult, qty, 1);
     const can = score >= price;
     const cls = 'item' + (qty === 0 && !can ? ' locked' : '') + (can ? ' clickable' : '');
-    html +=
-      '<div class="' + cls + '" ' +
-        (can ? 'onclick="buyClick(\'' + item.id + '\',\'gen\',event)"' : '') + '>' +
-        '<div class="icon">' + item.icon + '</div>' +
-        '<div><div class="title">' + item.name + '</div>' +
+    html += '<div class="' + cls + '" ' + (can ? 'onclick="buyClick(\'' + item.id + '\',\'gen\',event)"' : '') + '>' +
+        '<div class="icon">' + item.icon + '</div><div><div class="title">' + item.name + '</div>' +
         '<div class="sub">' + item.desc + ' · <b>' + qty + '</b></div></div>' +
-        '<button type="button" class="buy" data-id="' + item.id + '"' +
-          (can ? '' : ' disabled') +
-          ' onclick="buyClick(\'' + item.id + '\',\'gen\',event)">' +
-          fmt(price) + ' ⚡' +
-        '</button>' +
-      '</div>';
+        '<button type="button" class="buy" data-id="' + item.id + '"' + (can ? '' : ' disabled') +
+          ' onclick="buyClick(\'' + item.id + '\',\'gen\',event)">' + fmt(price) + ' ⚡</button></div>';
   });
   box.innerHTML = html;
 }
 function renderCol(){
-  const box = $('list');
-  let html = '';
+  const box = $('list'); let html = '';
   COLLECTION.forEach(item => {
     const isOwned = !!ownedMap[item.id];
     const can = score >= item.base && !isOwned;
-    const cls = 'item' + (isOwned ? ' owned' : '') +
-                (!isOwned && !can ? ' locked' : '') +
-                (can ? ' clickable' : '');
+    const cls = 'item' + (isOwned ? ' owned' : '') + (!isOwned && !can ? ' locked' : '') + (can ? ' clickable' : '');
     let btn;
-    if (isOwned){
-      btn = '<button type="button" class="buy owned-btn" disabled>✓</button>';
-    } else {
-      btn = '<button type="button" class="buy" data-id="' + item.id + '"' +
-              (can ? '' : ' disabled') +
-              ' onclick="buyClick(\'' + item.id + '\',\'col\',event)">' +
-              fmt(item.base) + ' ⚡' +
-            '</button>';
-    }
-    html +=
-      '<div class="' + cls + '" ' +
-        (can ? 'onclick="buyClick(\'' + item.id + '\',\'col\',event)"' : '') + '>' +
-        '<div class="icon">' + item.icon + '</div>' +
-        '<div><div class="title">' + item.name + '</div>' +
-        '<div class="sub">' + item.desc + '</div></div>' +
-        btn +
-      '</div>';
+    if (isOwned) btn = '<button type="button" class="buy owned-btn" disabled>✓</button>';
+    else btn = '<button type="button" class="buy" data-id="' + item.id + '"' + (can ? '' : ' disabled') + ' onclick="buyClick(\'' + item.id + '\',\'col\',event)">' + fmt(item.base) + ' ⚡</button>';
+    html += '<div class="' + cls + '" ' + (can ? 'onclick="buyClick(\'' + item.id + '\',\'col\',event)"' : '') + '>' +
+        '<div class="icon">' + item.icon + '</div><div><div class="title">' + item.name + '</div>' +
+        '<div class="sub">' + item.desc + '</div></div>' + btn + '</div>';
   });
   box.innerHTML = html;
 }
-function renderList(){
-  if (tab === 'gen') renderGen();
-  else if (tab === 'col') renderCol();
-}
+function renderList(){ if (tab === 'gen') renderGen(); else if (tab === 'col') renderCol(); }
+
 function renderRebirth(){
   const box = $('rebirth-panel');
   const canReb = totalEarned >= rebirthThreshold;
   const pct = Math.max(0, Math.min(100, (totalEarned / rebirthThreshold) * 100));
   const nextBonus = (rebirths + 1) * (rebirths + 1);
-  box.innerHTML =
-    '<div class="rebirth-card">' +
-      '<div class="rebirth-icon">💎</div>' +
-      '<div class="rebirth-title">Перерождение</div>' +
-      '<div class="rebirth-sub">Сбрось прогресс и стань сильнее</div>' +
-      '<div class="rebirth-stats">' +
-        '<div class="rebirth-stat">' +
-          '<div class="label">Перерождений</div>' +
-          '<div class="value gold">' + rebirths + '</div>' +
-        '</div>' +
-        '<div class="rebirth-stat">' +
-          '<div class="label">Бонус к клику</div>' +
-          '<div class="value">+' + Math.round(rebirthBonus * 100) + '%</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="rebirth-progress">' +
-        '<span>Прогресс</span>' +
-        '<span>' + fmt(totalEarned) + ' / ' + fmt(rebirthThreshold) + '</span>' +
-      '</div>' +
+  box.innerHTML = '<div class="rebirth-card"><div class="rebirth-icon">💎</div><div class="rebirth-title">Перерождение</div>' +
+      '<div class="rebirth-sub">Сбрось прогресс и стань сильнее</div><div class="rebirth-stats">' +
+        '<div class="rebirth-stat"><div class="label">Перерождений</div><div class="value gold">' + rebirths + '</div></div>' +
+        '<div class="rebirth-stat"><div class="label">Бонус к клику</div><div class="value">+' + Math.round(rebirthBonus * 100) + '%</div></div>' +
+      '</div><div class="rebirth-progress"><span>Прогресс</span><span>' + fmt(totalEarned) + ' / ' + fmt(rebirthThreshold) + '</span></div>' +
       '<div class="rebirth-bar"><div class="rebirth-fill" style="width:' + pct + '%"></div></div>' +
       '<button class="rebirth-btn" id="rebirth-btn"' + (canReb ? '' : ' disabled') + '>' +
-        (canReb ? 'Переродиться → +' + Math.round(nextBonus * 100) + '%' : 'Недостаточно прогресса') +
-      '</button>' +
-      '<div class="rebirth-hint">' +
-        'Сбрасывает: очки, юниты, коллекцию, уровень, ежедневку.<br>' +
-        'Оставляет: перерождения, снежинки, тему, историю.' +
-      '</div>' +
-    '</div>';
-  const btn = $('rebirth-btn');
-  if (btn && canReb) btn.addEventListener('click', doRebirth);
+        (canReb ? 'Переродиться → +' + Math.round(nextBonus * 100) + '%' : 'Недостаточно прогресса') + '</button>' +
+      '<div class="rebirth-hint">Сбрасывает: очки, юниты, коллекцию, уровень, ежедневку.<br>Оставляет: перерождения, снежинки, тему, историю.</div></div>';
+  const btn = $('rebirth-btn'); if (btn && canReb) btn.addEventListener('click', doRebirth);
 }
 
-/* ==== ЗИМНЯЯ ПАНЕЛЬ ==== */
 function renderWinter(){
   const box = $('winter-panel');
   const threshold = snowThreshold(snowflakes);
   const progress = Math.min(snowProgress, threshold);
   const pct = Math.max(0, Math.min(100, (progress / threshold) * 100));
-
-  let html = '';
-
-  html +=
-    '<div class="rebirth-card" style="margin-bottom:16px">' +
-      '<div class="rebirth-icon">❄️</div>' +
-      '<div class="rebirth-title">Снежинки</div>' +
-      '<div class="rebirth-sub">Каждые ' + threshold + ' тапов — +1 снежинка</div>' +
-      '<div class="rebirth-stats">' +
-        '<div class="rebirth-stat">' +
-          '<div class="label">Снежинок</div>' +
-          '<div class="value gold">' + snowflakes + '</div>' +
-        '</div>' +
-        '<div class="rebirth-stat">' +
-          '<div class="label">Бонус к клику</div>' +
-          '<div class="value">+' + Math.round(snowflakeBonus * 100) + '%</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="rebirth-progress">' +
-        '<span>До следующей</span>' +
-        '<span>' + progress + ' / ' + threshold + ' тапов</span>' +
-      '</div>' +
+  let html = '<div class="rebirth-card" style="margin-bottom:16px"><div class="rebirth-icon">❄️</div><div class="rebirth-title">Снежинки</div>' +
+      '<div class="rebirth-sub">Каждые ' + threshold + ' тапов — +1 снежинка</div><div class="rebirth-stats">' +
+        '<div class="rebirth-stat"><div class="label">Снежинок</div><div class="value gold">' + snowflakes + '</div></div>' +
+        '<div class="rebirth-stat"><div class="label">Бонус к клику</div><div class="value">+' + Math.round(snowflakeBonus * 100) + '%</div></div></div>' +
+      '<div class="rebirth-progress"><span>До следующей</span><span>' + progress + ' / ' + threshold + ' тапов</span></div>' +
       '<div class="rebirth-bar"><div class="rebirth-fill" style="width:' + pct + '%"></div></div>' +
-      '<div class="rebirth-hint">' +
-        'Порог растёт с каждой снежинкой (+35%).<br>' +
-        'Снежинки сохраняются при перерождении.' +
-      '</div>' +
-    '</div>';
+      '<div class="rebirth-hint">Порог растёт с каждой снежинкой (+35%).<br>Снежинки сохраняются при перерождении.</div></div>';
 
   html += '<div class="shead" style="margin-top:4px"><h3>Зимняя коллекция</h3></div>';
   WINTER_SHOP.forEach(item => {
     const isOwned = !!ownedMap[item.id];
     const can = score >= item.cost && !isOwned;
-    const cls = 'item event-item' + (isOwned ? ' owned' : '') +
-                (!isOwned && !can ? ' locked' : '') +
-                (can ? ' clickable' : '');
-    let btn;
-    if (isOwned){
-      btn = '<button type="button" class="buy owned-btn" disabled>✓</button>';
-    } else {
-      btn = '<button type="button" class="buy"' + (can ? '' : ' disabled') + '>' +
-              fmt(item.cost) + ' ⚡' +
-            '</button>';
-    }
-    html +=
-      '<div class="' + cls + '" ' +
-        (can ? 'onclick="buyWinter(\'' + item.id + '\',event)"' : '') + '>' +
-        '<div class="icon">' + item.icon + '</div>' +
-        '<div><div class="title">' + item.name + '</div>' +
-        '<div class="sub">' + item.desc + '</div></div>' +
-        btn +
-      '</div>';
+    const cls = 'item event-item' + (isOwned ? ' owned' : '') + (!isOwned && !can ? ' locked' : '') + (can ? ' clickable' : '');
+    let btn = isOwned ? '<button type="button" class="buy owned-btn" disabled>✓</button>' : '<button type="button" class="buy"' + (can ? '' : ' disabled') + '>' + fmt(item.cost) + ' ⚡</button>';
+    html += '<div class="' + cls + '" ' + (can ? 'onclick="buyWinter(\'' + item.id + '\',event)"' : '') + '>' +
+        '<div class="icon">' + item.icon + '</div><div><div class="title">' + item.name + '</div>' +
+        '<div class="sub">' + item.desc + '</div></div>' + btn + '</div>';
   });
-
   box.innerHTML = html;
 }
 
@@ -885,75 +791,49 @@ function buyWinter(id, ev){
   if (ev){ ev.preventDefault(); ev.stopPropagation(); }
   const item = WINTER_SHOP.find(i => i.id === id);
   if (!item || ownedMap[id] || score < item.cost) return;
-  score -= item.cost;
-  ownedMap[id] = 1;
-  if (item.type === 'click'){
-    snowflakeBonus += item.bonus;
-  } else {
-    cpsMult += item.bonus;
-    cps *= (1 + item.bonus);
-  }
+  score -= item.cost; ownedMap[id] = 1;
+  if (item.type === 'click') snowflakeBonus += item.bonus;
+  else { cpsMult += item.bonus; cps *= (1 + item.bonus); }
   renderStats(); renderWinter(); save();
   spawnFloat(item.icon + ' ' + item.name, window.innerWidth/2, 200);
 }
-
 window.buyWinter = buyWinter;
 
-window.buyClick = function(id, kind, ev){
-  if (ev){ ev.preventDefault(); ev.stopPropagation(); }
-  if (kind === 'col') buyCol(id);
-  else buyGen(id);
-};
+window.buyClick = function(id, kind, ev){ if (ev){ ev.preventDefault(); ev.stopPropagation(); } if (kind === 'col') buyCol(id); else buyGen(id); };
 
 function buyGen(id){
   const item = SHOP.find(i => i.id === id); if (!item) return;
-  const qtyOwned = counts[id] || 0;
-  let qty, total;
-  if (buyMode === 'max'){
-    const r = maxAffordable(item.base, item.mult, qtyOwned);
-    qty = r.qty; total = r.total;
-  } else {
-    qty = buyMode;
-    total = priceAfter(item.base, item.mult, qtyOwned, qty);
-  }
+  const qtyOwned = counts[id] || 0; let qty, total;
+  if (buyMode === 'max'){ const r = maxAffordable(item.base, item.mult, qtyOwned); qty = r.qty; total = r.total; }
+  else { qty = buyMode; total = priceAfter(item.base, item.mult, qtyOwned, qty); }
   if (qty === 0 || total > score) return;
-  score -= total;
-  counts[id] = qtyOwned + qty;
-  cps += item.cps * qty * (1 + cpsMult);
+  score -= total; counts[id] = qtyOwned + qty; cps += item.cps * qty * (1 + cpsMult);
   renderStats(); renderList(); save();
 }
 function buyCol(id){
   const item = COLLECTION.find(i => i.id === id);
   if (!item || ownedMap[id] || score < item.base) return;
-  score -= item.base;
-  ownedMap[id] = 1;
-  clickMult += item.bonus;
-  cpsMult += item.cps_bonus || 0;
-  cps *= (1 + (item.cps_bonus || 0));
+  score -= item.base; ownedMap[id] = 1; clickMult += item.bonus; cpsMult += item.cps_bonus || 0; cps *= (1 + (item.cps_bonus || 0));
   renderStats(); renderList(); save();
 }
 
-function clickValue(){
-  return Math.max(1, Math.floor(power * (1 + clickMult + snowflakeBonus) * (1 + rebirthBonus)));
-}
+function clickValue(){ return Math.max(1, Math.floor(power * (1 + clickMult + snowflakeBonus) * (1 + rebirthBonus))); }
 
 const clickerBtn = $('btn');
+let saveTimeout = null; // Для дебаунса сохранения при тапах
 
 function handleTap(x, y){
   const gain = clickValue();
-  score += gain;
-  totalEarned += gain;
-  checkLevelUp();
-
-  /* прогресс снежинки по тапам */
+  score += gain; totalEarned += gain; checkLevelUp();
   snowProgress++;
   const threshold = snowThreshold(snowflakes);
+
   if (snowProgress >= threshold){
-    snowProgress = 0;
-    snowflakes++;
-    snowflakeBonus += 0.01;
+    snowProgress = 0; snowflakes++; snowflakeBonus += 0.01;
     spawnFloat('❄️ +1 снежинка', window.innerWidth/2, 160);
+    syncSnowfall();
     if (tab === 'winter') renderWinter();
+    save(); // принудительное сохранение при дропе
   } else if (tab === 'winter'){
     const bar = document.querySelector('#winter-panel .rebirth-fill');
     const lbl = document.querySelector('#winter-panel .rebirth-progress span:last-child');
@@ -961,65 +841,43 @@ function handleTap(x, y){
     if (lbl) lbl.textContent = snowProgress + ' / ' + threshold + ' тапов';
   }
 
-  spawnRipple(x, y);
-  spawnFloat('+' + fmt(gain), x, y - 40);
-  renderStats();
+  spawnRipple(x, y); spawnFloat('+' + fmt(gain), x, y - 40); renderStats();
+
+  // АВТОСЕЙВ: если нет CPS, сохраняем раз в 2 секунды после последнего тапа, чтобы не спамить сервер
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => { save(); }, 2000);
 }
 
-clickerBtn.addEventListener('pointerdown', function(e){
-  e.preventDefault();
-  handleTap(e.clientX, e.clientY);
-}, {passive:false});
+clickerBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); handleTap(e.clientX, e.clientY); }, {passive:false});
 clickerBtn.addEventListener('touchstart', function(e){ e.preventDefault(); }, {passive:false});
 clickerBtn.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
 function spawnRipple(x, y){
-  const r = document.createElement('div');
-  r.className = 'ripple';
-  r.style.left = x + 'px';
-  r.style.top = y + 'px';
-  document.body.appendChild(r);
-  setTimeout(() => r.remove(), 600);
+  const r = document.createElement('div'); r.className = 'ripple'; r.style.left = x + 'px'; r.style.top = y + 'px';
+  document.body.appendChild(r); setTimeout(() => r.remove(), 600);
 }
 function spawnFloat(text, x, y){
-  const f = document.createElement('div');
-  f.className = 'floater'; f.textContent = text;
-  f.style.left = x + 'px'; f.style.top = y + 'px';
-  document.body.appendChild(f);
-  setTimeout(() => f.remove(), 800);
+  const f = document.createElement('div'); f.className = 'floater'; f.textContent = text; f.style.left = x + 'px'; f.style.top = y + 'px';
+  document.body.appendChild(f); setTimeout(() => f.remove(), 800);
 }
 
 $('tabs').addEventListener('click', function(e){
-  const t = e.target.closest('.tab'); if (!t) return;
-  if (t.dataset.tab === tab) return;
+  const t = e.target.closest('.tab'); if (!t) return; if (t.dataset.tab === tab) return;
   tab = t.dataset.tab; renderTabs(); renderList();
 });
-
 $('modes').addEventListener('click', function(e){
   const m = e.target.closest('.mode'); if (!m) return;
-  document.querySelectorAll('.mode').forEach(x => x.classList.remove('active'));
-  m.classList.add('active');
+  document.querySelectorAll('.mode').forEach(x => x.classList.remove('active')); m.classList.add('active');
   buyMode = (m.dataset.m === 'max') ? 'max' : parseInt(m.dataset.m);
 });
-
 function openSettings(){
   const box = $('themes'); box.innerHTML = '';
-  const themesList = [
-    { id: 'sunset',   name: 'Sunset' },
-    { id: 'midnight', name: 'Midnight' },
-    { id: 'winter',   name: '❄️ Winter' }
-  ];
+  const themesList = [{ id: 'sunset', name: 'Sunset' }, { id: 'midnight', name: 'Midnight' }, { id: 'winter', name: '❄️ Winter' }];
   themesList.forEach(t => {
-    const el = document.createElement('div');
-    el.className = 'theme-chip' + (t.id === themeId ? ' active' : '');
+    const el = document.createElement('div'); el.className = 'theme-chip' + (t.id === themeId ? ' active' : '');
     el.innerHTML = '<div class="swatch ' + t.id + '"></div>' + t.name;
     el.addEventListener('click', function(){
-      themeId = t.id;
-      applyTheme(t.id);
-      box.querySelectorAll('.theme-chip').forEach(x => x.classList.remove('active'));
-      el.classList.add('active');
-      renderStats();
-      save();
+      themeId = t.id; applyTheme(t.id); box.querySelectorAll('.theme-chip').forEach(x => x.classList.remove('active')); el.classList.add('active'); renderStats(); save();
     });
     box.appendChild(el);
   });
@@ -1027,39 +885,18 @@ function openSettings(){
 }
 $('gear').addEventListener('click', openSettings);
 $('close-settings').addEventListener('click', () => $('overlay').classList.remove('open'));
-$('overlay').addEventListener('click', e => {
-  if (e.target === $('overlay')) $('overlay').classList.remove('open');
-});
+$('overlay').addEventListener('click', e => { if (e.target === $('overlay')) $('overlay').classList.remove('open'); });
 
 function renderDaily(){
-  const btn = $('daily-btn'), info = $('daily-info');
-  if (!btn || !info) return;
-  if (daily.can){
-    btn.disabled = false;
-    btn.textContent = '+' + fmt(daily.bonus);
-    info.textContent = 'Серия: ' + daily.streak + ' дн. · Готово';
-  } else {
-    btn.disabled = true;
-    btn.textContent = fmtTime(daily.seconds_left);
-    info.textContent = 'Серия: ' + daily.streak + ' дн.';
-  }
+  const btn = $('daily-btn'), info = $('daily-info'); if (!btn || !info) return;
+  if (daily.can){ btn.disabled = false; btn.textContent = '+' + fmt(daily.bonus); info.textContent = 'Серия: ' + daily.streak + ' дн. · Готово'; }
+  else { btn.disabled = true; btn.textContent = fmtTime(daily.seconds_left); info.textContent = 'Серия: ' + daily.streak + ' дн.'; }
 }
-
 $('daily-btn').addEventListener('click', function(){
   const body = new URLSearchParams({ name: STATE.name });
-  fetch('/daily', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body})
-    .then(r => r.json()).then(d => {
-      if (d.ok){
-        score = d.score;
-        totalEarned = d.total_earned;
-        daily.can = d.can; daily.seconds_left = d.seconds_left;
-        daily.streak = d.streak; daily.bonus = d.next_bonus || daily.bonus;
-        checkLevelUp();
-        spawnFloat('+' + fmt(d.bonus), window.innerWidth/2, 180);
-      } else {
-        daily.can = d.can; daily.seconds_left = d.seconds_left;
-        daily.streak = d.streak; daily.bonus = d.next_bonus || 0;
-      }
+  fetch('/daily', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).then(r => r.json()).then(d => {
+      if (d.ok){ score = d.score; totalEarned = d.total_earned; daily.can = d.can; daily.seconds_left = d.seconds_left; daily.streak = d.streak; daily.bonus = d.next_bonus || daily.bonus; checkLevelUp(); spawnFloat('+' + fmt(d.bonus), window.innerWidth/2, 180); }
+      else { daily.can = d.can; daily.seconds_left = d.seconds_left; daily.streak = d.streak; daily.bonus = d.next_bonus || 0; }
       renderStats(); renderDaily(); renderList();
     });
 });
@@ -1069,11 +906,8 @@ setInterval(function(){
     daily.seconds_left -= 1;
     if (daily.seconds_left <= 0){
       const body = new URLSearchParams({ name: STATE.name });
-      fetch('/daily', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body})
-        .then(r => r.json()).then(d => {
-          daily.can = d.can; daily.seconds_left = d.seconds_left;
-          daily.streak = d.streak; daily.bonus = d.next_bonus || daily.bonus;
-          renderDaily();
+      fetch('/daily', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).then(r => r.json()).then(d => {
+          daily.can = d.can; daily.seconds_left = d.seconds_left; daily.streak = d.streak; daily.bonus = d.next_bonus || daily.bonus; renderDaily();
         });
     } else renderDaily();
   }
@@ -1082,72 +916,48 @@ setInterval(function(){
 function doRebirth(){
   if (totalEarned < rebirthThreshold) return;
   if (!confirm('Перерождение сбросит весь текущий прогресс. Продолжить?')) return;
-  fetch('/rebirth', {method:'POST'})
-    .then(r => r.json()).then(d => {
+  fetch('/rebirth', {method:'POST'}).then(r => r.json()).then(d => {
       if (d.ok){
-        rebirths = d.rebirths;
-        rebirthBonus = d.rebirthBonus;
-        rebirthThreshold = d.rebirthThreshold;
-        score = 0; power = 1000; cps = 0; lvl = 1; next = 100;
-        totalEarned = 0;
-        counts = {}; SHOP.forEach(i => counts[i.id] = 0);
-        ownedMap = {}; COLLECTION.forEach(i => ownedMap[i.id] = 0);
-        clickMult = 0; cpsMult = 0;
-        daily.can = true; daily.seconds_left = 0;
-        daily.streak = 0;
-        renderStats(); renderList(); renderDaily(); renderRebirth();
+        rebirths = d.rebirths; rebirthBonus = d.rebirthBonus; rebirthThreshold = d.rebirthThreshold;
+        score = 0; power = 1000; cps = 0; lvl = 1; next = 100; totalEarned = 0;
+        counts = {}; SHOP.forEach(i => counts[i.id] = 0); ownedMap = {}; COLLECTION.forEach(i => ownedMap[i.id] = 0); clickMult = 0; cpsMult = 0;
+        daily.can = true; daily.seconds_left = 0; daily.streak = 0;
+        renderStats(); renderList(); renderDaily(); renderRebirth(); syncSnowfall();
         spawnFloat('💎 Перерождение!', window.innerWidth/2, 200);
-      } else {
-        alert('Недостаточно прогресса');
-      }
+      } else { alert('Недостаточно прогресса'); }
     });
 }
 
 function save(){
   const payload = {
-    score, power, cps, lvl, next, clickMult, cpsMult,
-    total_earned: totalEarned, theme: themeId,
-    snowflakes, snowflake_bonus: snowflakeBonus, snow_progress: snowProgress
+    score, power, cps, lvl, next, clickMult, cpsMult, total_earned: totalEarned, theme: themeId,
+    snowflakes, snowflake_bonus: snowflakeBonus, snow_progress: snowProgress // <--- ВОТ ЭТИ ТРИ ПОЛЯ
   };
-  SHOP.forEach(i => {
-    payload['c_'+i.id] = priceAfter(i.base, i.mult, counts[i.id]||0, 1);
-    payload['n_'+i.id] = counts[i.id]||0;
-  });
+  SHOP.forEach(i => { payload['c_'+i.id] = priceAfter(i.base, i.mult, counts[i.id]||0, 1); payload['n_'+i.id] = counts[i.id]||0; });
   COLLECTION.forEach(i => { payload['o_'+i.id] = ownedMap[i.id] ? 1 : 0; });
   WINTER_SHOP.forEach(i => { payload['o_'+i.id] = ownedMap[i.id] ? 1 : 0; });
-  const body = new URLSearchParams({
-    name: STATE.name, payload: JSON.stringify(payload),
-    session_id: STATE.session_id || ""
-  });
-  fetch('/save', {method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).catch(()=>{});
+  const body = new URLSearchParams({ name: STATE.name, payload: JSON.stringify(payload), session_id: STATE.session_id || "" });
+  fetch('/save', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body}).catch(()=>{});
 }
 
 let tickCounter = 0;
 setInterval(function(){
   if (cps > 0){
-    const gain = cps / 30;
-    score += gain;
-    totalEarned += gain;
-    checkLevelUp();
-    renderStats();
-    tickCounter++;
-    if (tickCounter >= 150){ save(); tickCounter = 0; }
+    const gain = cps / 30; score += gain; totalEarned += gain; checkLevelUp(); renderStats();
+    tickCounter++; if (tickCounter >= 150){ save(); tickCounter = 0; }
   }
 }, 1000 / 30);
 
 if (STATE.offline_gain && STATE.offline_gain > 0){
-  const t = document.createElement('div');
-  t.className = 'offline-toast';
-  t.innerHTML = 'Пока тебя не было: <b>+' + fmt(STATE.offline_gain) + '</b>';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 5000);
+  const t = document.createElement('div'); t.className = 'offline-toast'; t.innerHTML = 'Пока тебя не было: <b>+' + fmt(STATE.offline_gain) + '</b>';
+  document.body.appendChild(t); setTimeout(() => t.remove(), 5000);
 }
 
+let resizeTimer = null;
+window.addEventListener('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(syncSnowfall, 300); });
+
 applyTheme(themeId);
-renderTabs();
-renderStats();
-renderDaily();
+renderTabs(); renderStats(); renderDaily(); syncSnowfall();
 setTimeout(function(){ renderList(); }, 0);
 </script>
 </body></html>
